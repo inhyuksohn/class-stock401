@@ -33,7 +33,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex flex-col">
 
-  <!-- ================= 학생 입장(로그인) 오버레이 모달 ================= -->
+  <!-- ================= 학생 입장(로그인 & 개인 비밀번호 입력) 오버레이 모달 ================= -->
   <div id="studentLoginOverlay" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="glass-panel w-full max-w-lg p-6 rounded-3xl border border-slate-700 shadow-2xl flex flex-col gap-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -43,27 +43,45 @@
           </div>
           <div>
             <h2 class="text-base sm:text-lg font-black text-white">KOSDAQ 클래스 실시간 거래소</h2>
-            <p class="text-[11px] text-slate-400">본인의 이름을 클릭하여 개인 투자 계좌에 접속하세요!</p>
+            <p class="text-[11px] text-slate-400">본인의 이름을 클릭하고 개인 비밀번호를 입력하세요!</p>
           </div>
         </div>
         <span id="loginCloudBadge" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-bold text-[10px]">연결 확인 중...</span>
       </div>
 
-      <!-- 학생 이름 선택 그리드 -->
+      <!-- STEP 1: 학생 이름 선택 그리드 -->
       <div id="loginStudentGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-64 overflow-y-auto p-1">
         <!-- JS 동적 생성 -->
       </div>
 
+      <!-- STEP 2: 선택한 학생 비밀번호 입력 박스 (이름 클릭 시 전환) -->
+      <div id="studentPinPromptBox" class="hidden flex-col items-center justify-center bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-5 space-y-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-user-lock"></i>
+        </div>
+        <div class="text-center">
+          <div class="text-sm font-black text-white"><span id="pinTargetStudentName" class="text-amber-300">-</span> 학생 계좌 로그인</div>
+          <p class="text-[11px] text-slate-400 mt-0.5">선생님께 안내받은 본인 비밀번호를 입력하세요.</p>
+        </div>
+        <input type="password" id="studentPinInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter') confirmStudentPinLogin()"
+          class="w-48 bg-slate-950 border-2 border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-2 text-center font-mono text-base text-white outline-none select-text tracking-widest">
+        <div class="flex items-center gap-2 w-48">
+          <button onclick="cancelStudentPinPrompt()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs cursor-pointer">뒤로</button>
+          <button onclick="confirmStudentPinLogin()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-xs cursor-pointer shadow">입장하기</button>
+        </div>
+      </div>
+
+      <!-- 하단 교사 접속 버튼 (교사 PIN 번호 노출 완전 제거!) -->
       <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
         <button onclick="openTeacherAuthModal()" class="text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer">
           <i class="fa-solid fa-user-shield"></i> 선생님(교사 모드)으로 접속하기
         </button>
-        <span class="text-[11px] text-slate-500">교사 PIN: 10101</span>
+        <span class="text-[11px] text-slate-500">개인 계좌 보호 시스템 적용</span>
       </div>
     </div>
   </div>
 
-  <!-- ================= 교사 모드 비밀번호(10101) & 클라우드 DB 주소 설정 모달 ================= -->
+  <!-- ================= 교사 모드 비밀번호 & 클라우드 DB 주소 설정 모달 ================= -->
   <div id="teacherAuthModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-md p-5 rounded-2xl shadow-2xl space-y-4 text-xs">
       <div class="flex items-center gap-2.5 border-b border-slate-800 pb-3">
@@ -71,15 +89,15 @@
           <i class="fa-solid fa-chalkboard-user"></i>
         </div>
         <div>
-          <h3 class="font-black text-sm text-white">교사 관리자 모드 & 실시간 클라우드 설정</h3>
-          <p class="text-[11px] text-slate-400">교사 비밀번호(10101)와 Firebase DB 주소를 관리합니다.</p>
+          <h3 class="font-black text-sm text-white">교사 관리자 모드 접속</h3>
+          <p class="text-[11px] text-slate-400">선생님 전용 관리자 비밀번호를 입력하세요.</p>
         </div>
       </div>
 
       <div class="space-y-3">
         <div>
           <label class="font-bold text-slate-300 block mb-1">🔑 교사 비밀번호 입력</label>
-          <input type="password" id="teacherPwInput" placeholder="비밀번호 입력 (기본: 10101)" onkeydown="if(event.key==='Enter') confirmTeacherLogin()"
+          <input type="password" id="teacherPwInput" placeholder="관리자 비밀번호 입력" onkeydown="if(event.key==='Enter') confirmTeacherLogin()"
             class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl px-3 py-2 text-white font-mono outline-none select-text">
         </div>
 
@@ -134,7 +152,7 @@
         <i class="fa-solid fa-user-check text-emerald-400"></i>
         <select id="studentSelect" onchange="onStudentChange(this.value)" class="bg-transparent font-black text-slate-100 outline-none cursor-pointer max-w-[110px] sm:max-w-[140px] truncate">
         </select>
-        <button onclick="openStudentLoginOverlay()" class="text-[10px] text-indigo-400 hover:underline ml-1 font-bold cursor-pointer" title="다른 학생 계좌로 전환">변경</button>
+        <button onclick="openStudentLoginOverlay()" class="text-[10px] text-indigo-400 hover:underline ml-1 font-bold cursor-pointer" title="비밀번호 입력 후 다른 학생 계좌로 전환">계좌변경</button>
       </div>
 
       <div class="hidden sm:flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs font-mono">
@@ -169,7 +187,7 @@
         <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="importBackupFile(event)">
 
         <button onclick="openClassSetupModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer">
-          <i class="fa-solid fa-sliders text-amber-400"></i><span class="hidden lg:inline">설정</span>
+          <i class="fa-solid fa-sliders text-amber-400"></i><span class="hidden lg:inline">설정/비번</span>
         </button>
 
         <button onclick="nextMarketTurn()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 via-amber-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white text-xs font-black flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer">
@@ -411,7 +429,7 @@
                 <th class="py-3 px-4 text-right">주식 평가액</th>
                 <th class="py-3 px-4 text-right">총 평가자산</th>
                 <th class="py-3 px-4 text-right">수익률</th>
-                <th class="py-3 px-4 text-center">선택</th>
+                <th class="py-3 px-4 text-center">계좌 보호</th>
               </tr>
             </thead>
             <tbody id="classRankingTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
@@ -422,7 +440,7 @@
 
   </div>
 
-  <!-- ================= 모달 0: 설명서 모달 ================= -->
+  <!-- ================= 모달 0: 설명서 모달 (교사 비밀번호 언급 완전 삭제!) ================= -->
   <div id="tutorialModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs p-5 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -430,8 +448,8 @@
         <button onclick="closeTutorialModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-slate-300 leading-relaxed">
-        <p>• <strong>학생 이용법</strong>: 처음 입장할 때 본인 이름을 선택하고, 원하는 종목을 골라 우측 패널에서 직접 <strong>[매수]</strong> 또는 <strong>[매도]</strong> 주문을 전송하세요. 내 주문은 즉시 클라우드를 통해 학급 전체 주주 명부와 랭킹에 반영됩니다.</p>
-        <p>• <strong>선생님(교사 모드)</strong>: 우측 상단 <strong>[교사 모드]</strong> 버튼(PIN: <code>10101</code>)을 누르면 거시경제 국면(1~5단계) 조절, 종목 추세 설정, 그리고 <strong>[하루 마감]</strong> 버튼이 나타납니다.</p>
+        <p>• <strong>학생 이용법</strong>: 처음 입장할 때 본인 이름을 선택하고 선생님께 부여받은 <strong>개인 비밀번호</strong>를 입력해 로그인하세요. 원하는 종목을 골라 우측 패널에서 직접 <strong>[매수]</strong> 또는 <strong>[매도]</strong> 주문을 전송하면 학급 전체 주주 명부와 랭킹에 즉시 반영됩니다.</p>
+        <p>• <strong>선생님(교사 모드)</strong>: 우측 상단 <strong>[교사 모드]</strong> 버튼을 통해 로그인하면 학생별 비밀번호 설정, 거시경제 국면(1~5단계) 조절, 종목 추세 설정, 그리고 <strong>[하루 마감]</strong> 기능을 사용할 수 있습니다.</p>
       </div>
       <div class="flex justify-end pt-2">
         <button onclick="closeTutorialModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl cursor-pointer">닫기</button>
@@ -494,27 +512,36 @@
     </div>
   </div>
 
-  <!-- ================= 학급 설정 모달 (교사 전용) ================= -->
+  <!-- ================= 학급 설정 & 학생별 비밀번호(PIN) 설정 모달 (교사 전용) ================= -->
   <div id="setupModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-xs">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-chalkboard-user text-amber-400 text-sm"></i>
-          <h3 class="font-extrabold text-sm text-slate-100">학급 모의투자 수업 환경 설정 (클라우드 전체 동기화)</h3>
+          <h3 class="font-extrabold text-sm text-slate-100">학급 명단 · 학생별 비밀번호(PIN) · 종목 설정</h3>
         </div>
         <button onclick="closeClassSetupModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div class="p-4 flex-1 overflow-y-auto space-y-5">
+        <!-- 💡 학생 명단 및 개인 비밀번호(PIN) 설정 섹션 -->
         <div class="space-y-2 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-          <div class="flex items-center justify-between">
-            <label class="font-bold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-users text-indigo-400"></i>참가 학생 명단</label>
-            <div class="flex items-center gap-2 text-[11px]">
-              <button onclick="loadSampleStudents(15)" class="text-indigo-400 hover:underline cursor-pointer">15명 예시</button>
-              <button onclick="loadSampleStudents(25)" class="text-indigo-400 hover:underline cursor-pointer">25명 예시</button>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <label class="font-bold text-slate-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-user-lock text-indigo-400"></i>학생 명단 및 개인 비밀번호 설정
+            </label>
+            <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+              <button onclick="autoAssignPins('seq')" class="px-2 py-1 rounded bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 font-bold cursor-pointer" title="1001, 1002, 1003... 순서대로 부여">번호순 비번(1001~)</button>
+              <button onclick="autoAssignPins('random')" class="px-2 py-1 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 font-bold cursor-pointer" title="무작위 4자리 숫자 부여">랜덤 4자리 부여</button>
+              <button onclick="autoAssignPins('1234')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer" title="모두 1234로 통일">전원 1234 통일</button>
             </div>
           </div>
-          <textarea id="setupStudentsInput" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 font-mono select-text"></textarea>
+          <p class="text-[11px] text-slate-400">
+            <code class="text-amber-300 font-bold">이름:비밀번호</code> 형식으로 입력하며 쉼표(,)로 구분합니다. (비밀번호를 생략하고 이름만 적으면 기본값 <code class="text-emerald-400">1234</code>로 설정됩니다)
+          </p>
+          <textarea id="setupStudentsInput" rows="4" placeholder="강채원:1001, 김라이:1002, 김성원:1003..."
+            class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 font-mono select-text leading-relaxed"></textarea>
+          
           <div class="flex items-center justify-between pt-1 text-slate-400">
             <span>시작 지원 예수금:</span>
             <div class="flex items-center gap-1">
@@ -549,12 +576,12 @@
 
   <script>
     /* ==========================================================================
-       ★ 선생님의 Firebase Realtime Database URL 기본 탑재 완료! ★
+       ★ 선생님의 Firebase Realtime Database URL 기본 탑재 ★
        ========================================================================== */
     const DEFAULT_FIREBASE_DB_URL = "https://class-stock401-default-rtdb.firebaseio.com/"; 
 
-    const STORAGE_KEY_CLASS_DATA = 'class_stock_game_v5_cloud';
-    const STORAGE_KEY_BACKUP_SNAPSHOT = 'class_stock_snapshot_undo_v5';
+    const STORAGE_KEY_CLASS_DATA = 'class_stock_game_v6_cloud';
+    const STORAGE_KEY_BACKUP_SNAPSHOT = 'class_stock_snapshot_undo_v6';
     const STORAGE_KEY_FIREBASE_URL = 'class_stock_firebase_url_v1';
     const STORAGE_KEY_MY_STUDENT_NAME = 'class_stock_my_student_name';
 
@@ -582,9 +609,11 @@
     ];
 
     const DEFAULT_STUDENTS = [
-      "김소연", "오은찬", "박지민", "최동현", "정수빈",
-      "강준호", "조예린", "윤서준", "장하은", "임도윤",
-      "한시우", "오지호", "서지우", "신유찬", "권민서"
+      "강채원", "김라이", "김성원", "김소연",
+      "김희찬", "문채은", "민찬율", "서주안",
+      "손루나", "오은찬", "이유주", "이은지",
+      "이찬승", "정하음", "최가람", "최은우",
+      "최이경", "홍하준"
     ];
 
     const UPPER_LIMIT_NEWS = [
@@ -608,8 +637,9 @@
     let marketDay = 1;
     let seedMoney = 10000000;
     let stocks = [];
-    let students = {};
+    let students = {}; // { name: { cash, pin: "1234", holdings: {} } }
     let currentStudentName = "";
+    let pendingPinStudentName = ""; // 로그인 시 비밀번호 입력 대기 중인 학생 이름
     let selectedStockCode = null;
     let currentOrderType = 'buy';
     let chartInstance = null;
@@ -653,7 +683,6 @@
         }
         firebaseDb = firebase.database();
 
-        // 실시간 리스너 등록
         firebaseDb.ref('kosdaq_class_room').on('value', (snapshot) => {
           const cloudData = snapshot.val();
           updateCloudBadgeUI(true);
@@ -682,6 +711,7 @@
             Object.entries(cloudData.students).forEach(([sName, sObj]) => {
               restoredStudents[sName] = {
                 cash: sObj.cash !== undefined ? sObj.cash : seedMoney,
+                pin: sObj.pin ? String(sObj.pin) : "1234",
                 holdings: sObj.holdings || {}
               };
             });
@@ -756,6 +786,7 @@
       if (isCloudConnected && firebaseDb && students[studentName]) {
         firebaseDb.ref(`kosdaq_class_room/students/${studentName}`).set({
           cash: students[studentName].cash,
+          pin: students[studentName].pin || "1234",
           holdings: students[studentName].holdings || {}
         });
       }
@@ -768,18 +799,57 @@
     }
 
     /* ==========================================================================
-       4. 학생 입장 오버레이 & 교사 모드(PIN: 10101) 전환
+       4. 학생 개인 비밀번호(PIN) 로그인 & 교사 모드 전환
        ========================================================================== */
     function renderStudentLoginGrid() {
       const grid = document.getElementById('loginStudentGrid');
       if (!grid) return;
       const names = Object.keys(students);
       grid.innerHTML = names.map(name => `
-        <button onclick="selectMyStudentAccount('${name}')"
-          class="py-3 px-2 rounded-2xl bg-slate-900 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-400 text-slate-100 font-black text-xs sm:text-sm shadow transition-all active:scale-95 cursor-pointer truncate">
-          ${name}
+        <button onclick="promptStudentPin('${name}')"
+          class="py-3 px-2 rounded-2xl bg-slate-900 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-400 text-slate-100 font-black text-xs sm:text-sm shadow transition-all active:scale-95 cursor-pointer truncate flex items-center justify-center gap-1">
+          <span>${name}</span>
         </button>
       `).join('');
+    }
+
+    // 학생 이름을 클릭하면 비밀번호 입력 창을 띄움 (교사 모드일 때는 즉시 진입)
+    function promptStudentPin(name) {
+      if (isTeacherMode) {
+        selectMyStudentAccount(name);
+        return;
+      }
+      pendingPinStudentName = name;
+      document.getElementById('pinTargetStudentName').textContent = name;
+      document.getElementById('studentPinInput').value = "";
+      document.getElementById('loginStudentGrid').classList.add('hidden');
+      const pinBox = document.getElementById('studentPinPromptBox');
+      pinBox.classList.remove('hidden');
+      pinBox.classList.add('flex');
+      setTimeout(() => document.getElementById('studentPinInput').focus(), 80);
+    }
+
+    function cancelStudentPinPrompt() {
+      pendingPinStudentName = "";
+      const pinBox = document.getElementById('studentPinPromptBox');
+      pinBox.classList.add('hidden');
+      pinBox.classList.remove('flex');
+      document.getElementById('loginStudentGrid').classList.remove('hidden');
+    }
+
+    function confirmStudentPinLogin() {
+      if (!pendingPinStudentName || !students[pendingPinStudentName]) return;
+      const inputPin = document.getElementById('studentPinInput').value.trim();
+      const correctPin = String(students[pendingPinStudentName].pin || "1234");
+
+      if (inputPin === correctPin) {
+        cancelStudentPinPrompt();
+        selectMyStudentAccount(pendingPinStudentName);
+      } else {
+        alert("비밀번호가 일치하지 않습니다! 다시 확인해 주세요.");
+        document.getElementById('studentPinInput').value = "";
+        document.getElementById('studentPinInput').focus();
+      }
     }
 
     function selectMyStudentAccount(name) {
@@ -790,6 +860,7 @@
     }
 
     function openStudentLoginOverlay() {
+      cancelStudentPinPrompt();
       renderStudentLoginGrid();
       document.getElementById('studentLoginOverlay').classList.remove('hidden');
     }
@@ -823,7 +894,7 @@
       const dbUrl = document.getElementById('firebaseUrlInput').value.trim();
 
       if (pw !== "10101") {
-        alert("교사 비밀번호가 일치하지 않습니다! (기본값: 10101)");
+        alert("관리자 비밀번호가 일치하지 않습니다!");
         return;
       }
 
@@ -862,7 +933,7 @@
         btnLabel.textContent = "교사 모드";
         btn.className = "px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer";
       }
-      renderStudentSelector();
+      renderAll();
     }
 
     /* ==========================================================================
@@ -891,6 +962,7 @@
       if (!stocks || stocks.length === 0) setupDefaultStocks();
       stocks.forEach(s => { if (!s.trend) s.trend = "none"; });
       if (!students || Object.keys(students).length === 0) setupDefaultStudents();
+      Object.values(students).forEach(st => { if (!st.pin) st.pin = "1234"; });
       if (!selectedStockCode && stocks.length > 0) selectedStockCode = stocks[0].code;
 
       const savedMyName = localStorage.getItem(STORAGE_KEY_MY_STUDENT_NAME);
@@ -936,8 +1008,12 @@
 
     function setupDefaultStudents() {
       students = {};
-      DEFAULT_STUDENTS.forEach(name => {
-        students[name] = { cash: seedMoney, holdings: {} };
+      DEFAULT_STUDENTS.forEach((name, idx) => {
+        students[name] = {
+          cash: seedMoney,
+          pin: "1234",
+          holdings: {}
+        };
       });
       currentStudentName = DEFAULT_STUDENTS[0];
     }
@@ -1052,7 +1128,7 @@
     }
 
     /* ==========================================================================
-       6. 매수 / 매도 / 일괄 주문 (클라우드 개별 학생 즉시 동기화)
+       6. 매수 / 매도 / 일괄 주문
        ========================================================================== */
     function executeOrder() {
       const s = stocks.find(x => x.code === selectedStockCode);
@@ -1189,6 +1265,11 @@
     }
 
     function onStudentChange(name) {
+      if (!isTeacherMode && name !== currentStudentName) {
+        openStudentLoginOverlay();
+        promptStudentPin(name);
+        return;
+      }
       currentStudentName = name;
       localStorage.setItem(STORAGE_KEY_MY_STUDENT_NAME, name);
       renderStudentHUD();
@@ -1326,6 +1407,12 @@
         }
 
         const isCurrent = item.name === currentStudentName;
+        // 교사 모드에서는 즉시 전환, 학생 모드에서는 비밀번호 인증 후 전환
+        const actionBtn = isTeacherMode
+          ? `<button onclick="switchToStudent('${item.name}')" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-bold transition-all cursor-pointer">교사 열람</button>`
+          : (isCurrent
+              ? `<span class="text-[11px] text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>접속 중</span>`
+              : `<button onclick="openStudentLoginOverlay(); promptStudentPin('${item.name}');" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white text-[11px] font-bold transition-all cursor-pointer"><i class="fa-solid fa-lock text-[9px] mr-1"></i>비번 로그인</button>`);
 
         return `
           <tr class="hover:bg-slate-800/40 transition-colors ${isCurrent ? 'bg-indigo-950/30 border-l-4 border-indigo-500' : ''}">
@@ -1339,18 +1426,21 @@
             <td class="py-3 px-4 text-right text-slate-300">${item.stockValue.toLocaleString()}원</td>
             <td class="py-3 px-4 text-right font-black text-slate-100 text-sm">${item.totalAsset.toLocaleString()}원</td>
             <td class="py-3 px-4 text-right font-extrabold ${colorClass}">${sign}${item.profitRate.toFixed(2)}%</td>
-            <td class="py-3 px-4 text-center">
-              <button onclick="switchToStudent('${item.name}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-bold transition-all cursor-pointer">
-                계좌 보기
-              </button>
-            </td>
+            <td class="py-3 px-4 text-center">${actionBtn}</td>
           </tr>
         `;
       }).join('');
     }
 
     function switchToStudent(name) {
-      onStudentChange(name);
+      if (!isTeacherMode && name !== currentStudentName) {
+        openStudentLoginOverlay();
+        promptStudentPin(name);
+        return;
+      }
+      currentStudentName = name;
+      localStorage.setItem(STORAGE_KEY_MY_STUDENT_NAME, name);
+      renderAll();
       switchMainView('market');
     }
 
@@ -1527,7 +1617,7 @@
     }
 
     /* ==========================================================================
-       8. 모달 제어 및 교사 설정/초기화
+       8. 모달 제어 및 교사 설정/학생 비밀번호 일괄 관리
        ========================================================================== */
     function openTutorialModal() {
       const modal = document.getElementById('tutorialModal');
@@ -1661,7 +1751,8 @@
 
     function openClassSetupModal() {
       if (!isTeacherMode) return;
-      document.getElementById('setupStudentsInput').value = Object.keys(students).join(', ');
+      const studentEntries = Object.entries(students).map(([name, obj]) => `${name}:${obj.pin || '1234'}`);
+      document.getElementById('setupStudentsInput').value = studentEntries.join(', ');
       document.getElementById('setupSeedMoneyInput').value = seedMoney;
       document.getElementById('setupStockGrid').innerHTML = stocks.map((s, idx) => `
         <div class="p-2 bg-slate-900 rounded-lg border border-slate-800 flex items-center gap-1.5">
@@ -1679,16 +1770,27 @@
       modal.classList.remove('hidden');
       setTimeout(() => modal.classList.remove('opacity-0'), 10);
     }
+
     function closeClassSetupModal() {
       const modal = document.getElementById('setupModal');
       modal.classList.add('opacity-0');
       setTimeout(() => modal.classList.add('hidden'), 200);
     }
-    function loadSampleStudents(count) {
-      const sample = [];
-      for (let i = 1; i <= count; i++) sample.push(`${i}번 학생`);
-      document.getElementById('setupStudentsInput').value = sample.join(', ');
+
+    // 학생 비밀번호 일괄 자동 부여 도우미 (번호순 1001~, 랜덤 4자리, 1234 통일)
+    function autoAssignPins(mode) {
+      const raw = document.getElementById('setupStudentsInput').value;
+      const items = raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+      const updated = items.map((entry, idx) => {
+        const name = entry.split(':')[0].trim();
+        if (!name) return '';
+        if (mode === 'seq') return `${name}:${1001 + idx}`;
+        if (mode === 'random') return `${name}:${Math.floor(1000 + Math.random() * 9000)}`;
+        return `${name}:1234`;
+      }).filter(Boolean);
+      document.getElementById('setupStudentsInput').value = updated.join(', ');
     }
+
     function restoreDefaultStockNames() {
       stocks.forEach((s, idx) => {
         if (DEFAULT_STOCKS[idx]) {
@@ -1698,16 +1800,31 @@
         }
       });
     }
+
     function saveClassSetup() {
-      const parsedStudents = document.getElementById('setupStudentsInput').value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
-      if (parsedStudents.length < 2) { alert('최소 2명 이상 입력해주세요.'); return; }
+      const rawEntries = document.getElementById('setupStudentsInput').value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+      if (rawEntries.length < 2) { alert('최소 2명 이상 입력해주세요.'); return; }
       seedMoney = parseInt(document.getElementById('setupSeedMoneyInput').value) || 10000000;
       const newStudents = {};
-      parsedStudents.forEach(name => {
-        newStudents[name] = students[name] ? students[name] : { cash: seedMoney, holdings: {} };
+
+      rawEntries.forEach(entry => {
+        const parts = entry.split(':');
+        const name = parts[0].trim();
+        const pin = (parts[1] && parts[1].trim()) ? parts[1].trim() : "1234";
+        if (!name) return;
+
+        if (students[name]) {
+          newStudents[name] = {
+            ...students[name],
+            pin: pin
+          };
+        } else {
+          newStudents[name] = { cash: seedMoney, pin: pin, holdings: {} };
+        }
       });
+
       students = newStudents;
-      if (!students[currentStudentName]) currentStudentName = parsedStudents[0];
+      if (!students[currentStudentName]) currentStudentName = Object.keys(students)[0];
 
       stocks.forEach((s, idx) => {
         const nameVal = document.getElementById(`setup_stock_name_${idx}`).value.trim();
@@ -1725,7 +1842,7 @@
       renderAll();
       renderStudentLoginGrid();
       closeClassSetupModal();
-      alert('설정이 저장되어 실시간 클라우드에 배포되었습니다!');
+      alert('학생 명단 및 개인 비밀번호가 실시간 클라우드에 저장되었습니다!');
     }
 
     function resetAllGameData() {
