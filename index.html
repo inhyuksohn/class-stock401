@@ -59,7 +59,7 @@
         <span id="loginCloudBadge" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-bold text-[10px]">연결 확인 중...</span>
       </div>
 
-      <!-- ★ 서버 선택 탭 ★ -->
+      <!-- ★ 학급(채널 1~부마) 선택 탭 ★ -->
       <div class="bg-slate-900 p-1.5 rounded-2xl border border-slate-800 flex items-center justify-between gap-1">
         <button type="button" onclick="switchClassRoom('class_1')" id="loginRoomBtn_class_1" class="flex-1 py-2 rounded-xl font-black text-xs transition-all cursor-pointer bg-indigo-600 text-white shadow">미산</button>
         <button type="button" onclick="switchClassRoom('class_2')" id="loginRoomBtn_class_2" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">청천</button>
@@ -108,7 +108,7 @@
           <i class="fa-solid fa-chalkboard-user"></i>
         </div>
         <div>
-          <h3 class="font-black text-sm text-white"><span id="authModalRoomName" class="text-amber-300">1반</span> 교사 관리자 모드 접속</h3>
+          <h3 class="font-black text-sm text-white"><span id="authModalRoomName" class="text-amber-300">미산</span> 교사 관리자 모드 접속</h3>
           <p class="text-[11px] text-slate-400">해당 학급의 교사 전용 비밀번호를 입력하세요.</p>
         </div>
       </div>
@@ -230,7 +230,7 @@
   <!-- ================= 교사용 거시경제 상황 컨트롤 바 ================= -->
   <div id="teacherMacroBar" class="hidden bg-slate-900/95 border-b border-amber-500/30 px-4 py-2 flex-wrap items-center justify-between gap-2.5 z-10 flex-shrink-0">
     <div class="flex items-center gap-2">
-      <span id="macroRoomBadge" class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">1반 교사 컨트롤</span>
+      <span id="macroRoomBadge" class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">미산 교사 컨트롤</span>
       <span class="text-xs font-bold text-slate-200">다음 날 거시경제 국면:</span>
       <span id="economyStateDescription" class="text-xs font-extrabold text-amber-300">3단계: 보통 (랜덤 시장)</span>
     </div>
@@ -272,12 +272,20 @@
       <section class="flex-1 h-full flex flex-col bg-slate-950 overflow-y-auto">
         <div class="p-3 bg-indigo-950/30 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">1반</span>
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">미산</span>
             <span class="font-extrabold text-indigo-300 text-sm" id="hudStudentName">-</span>
             <span class="text-slate-500">님의 실시간 계좌</span>
           </div>
           <div class="flex items-center gap-4 font-mono">
-            <div><span class="text-slate-400">예수금: </span><span id="studentCashDisplay" class="font-bold text-emerald-400">10,000,000원</span></div>
+            <!-- ★ 추가된 입출금 버튼 영역 ★ -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400">예수금: </span>
+              <span id="studentCashDisplay" class="font-bold text-emerald-400">10,000,000원</span>
+              <!-- 교사 모드에서만 보이는 입출금 버튼 -->
+              <button type="button" id="teacherCashAdjustBtn" onclick="promptCashAdjustment()" class="hidden items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 text-[10px] font-bold cursor-pointer transition-all">
+                <i class="fa-solid fa-coins"></i>입출금
+              </button>
+            </div>
             <div><span class="text-slate-400">총 자산: </span><span id="studentTotalAssetDisplay" class="font-black text-slate-200">10,000,000원</span></div>
             <div><span class="text-slate-400">수익률: </span><span id="studentProfitRateDisplay" class="font-bold text-slate-400">0.00%</span></div>
           </div>
@@ -437,7 +445,7 @@
             <i class="fa-solid fa-trophy"></i>
           </div>
           <div>
-            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">1반</span> 실시간 랭킹 전광판</h2>
+            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">미산</span> 실시간 랭킹 전광판</h2>
             <p class="text-[11px] text-slate-400">우리 반 학생들의 투자 수익률과 전일 대비 순위 등락이 실시간으로 반영됩니다.</p>
           </div>
         </div>
@@ -477,7 +485,7 @@
         <button type="button" onclick="closeTutorialModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-slate-300 leading-relaxed">
-        <p>• <strong>반별 독립 채널 (1반~5반)</strong>: 상단에서 본인 학급(1반~5반)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
+        <p>• <strong>반별 독립 채널 (미산~부마)</strong>: 상단에서 본인 학급(미산~부마)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
         <p>• <strong>반 전용 링크 공유</strong>: 교사 모드 활성화 후 상단 <strong>[🔗 반 링크복사]</strong> 버튼을 누르면 해당 반으로 바로 접속되는 전용 주소(예: <code>?room=2</code>)가 복사됩니다.</p>
         <p>• <strong>학생 이용법</strong>: 본인 학급과 이름을 선택하고 선생님께 안내받은 <strong>개인 비밀번호</strong>를 입력해 로그인하세요.</p>
         <p>• <strong>선생님(교사 모드)</strong>: 우측 상단 <strong>[교사 모드]</strong> 버튼을 통해 로그인하면 우리 반 학생 명단/비밀번호 설정, 교사 비밀번호 변경, 거시경제 국면(1~5단계) 조절 및 <strong>[하루 마감]</strong> 기능을 사용할 수 있습니다.</p>
@@ -549,7 +557,7 @@
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-chalkboard-user text-amber-400 text-sm"></i>
-          <h3 class="font-extrabold text-sm text-slate-100"><span id="setupModalRoomBadge" class="text-amber-300">1반</span> 환경 설정 (다른 반과 독립 저장)</h3>
+          <h3 class="font-extrabold text-sm text-slate-100"><span id="setupModalRoomBadge" class="text-amber-300">미산</span> 환경 설정 (다른 반과 독립 저장)</h3>
         </div>
         <button type="button" onclick="closeClassSetupModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
@@ -559,7 +567,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
           <div>
             <label class="font-bold text-slate-200 block mb-1"><i class="fa-solid fa-tag text-amber-400 mr-1"></i>학급 표시 이름 (별칭)</label>
-            <input type="text" id="setupRoomCustomTitleInput" placeholder="예: 6학년 1반"
+            <input type="text" id="setupRoomCustomTitleInput" placeholder="예: 6학년 미산"
               class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 font-bold outline-none focus:border-indigo-500 select-text">
           </div>
           <div>
@@ -636,7 +644,6 @@
       class_5: "부마"
     };
 
-    // 💡 [수정 1] 20개 모든 종목의 기본 추세(trend)를 'none'(완전 랜덤)으로 설정!
     const DEFAULT_STOCKS = [
       { code: "005930", name: "삼전전자", price: 72000, trend: "none" },
       { code: "000660", name: "하이닉스하이", price: 168000, trend: "none" },
@@ -707,7 +714,7 @@
     let firebaseDb = null;
     let currentRoomRef = null;
     let isCloudConnected = false;
-    let isInitialRoomSync = true; // 💡 처음 접속하거나 반을 바꿀 때 결산 모달이 잘못 뜨지 않도록 방지하는 플래그
+    let isInitialRoomSync = true;
     let toastTimer = null;
 
     const ECON_CONFIGS = {
@@ -753,7 +760,7 @@
     }
 
     /* ==========================================================================
-       3. 멀티 학급(1반 ~ 5반) 전환 및 Firebase 실시간 연동
+       3. 멀티 학급(미산 ~ 부마) 전환 및 Firebase 실시간 연동
        ========================================================================== */
     function detectInitialRoom() {
       const params = new URLSearchParams(window.location.search);
@@ -774,7 +781,6 @@
       currentRoomId = roomId;
       localStorage.setItem(STORAGE_KEY_CURRENT_ROOM, roomId);
 
-      // 💡 반을 바꿀 때 혹시 열려 있던 결산/속보 모달을 모두 닫고 초기 동기화 플래그 설정
       closeLimitModal();
       closeDailySummaryModal();
       isInitialRoomSync = true;
@@ -792,7 +798,7 @@
     }
 
     function updateRoomSelectorUI() {
-      const shortName = ROOM_LABELS[currentRoomId] || "1반";
+      const shortName = ROOM_LABELS[currentRoomId] || "미산";
       const displayTitle = roomCustomTitle ? `${shortName} (${roomCustomTitle})` : `${shortName} 거래소`;
 
       document.getElementById('headerRoomSelect').value = currentRoomId;
@@ -923,9 +929,6 @@
           renderAll();
           renderStudentLoginGrid();
 
-          // 💡 [수정 2]
-          // 1) 처음 방에 들어왔을 때(isInitialRoomSync === true)는 날짜가 달라도 절대 브리킹 뉴스나 결산 모달을 띄우지 않음!
-          // 2) 아직 로그인하지 않아 초기 화면(studentLoginOverlay)이 열려 있는 상태에서도 절대 띄우지 않음!
           const isLoginScreenVisible = !document.getElementById('studentLoginOverlay').classList.contains('hidden');
           if (!isInitialRoomSync && !isLoginScreenVisible && !isTeacherMode && incomingDay === prevDay + 1) {
             showDailySummaryModal(incomingDay - 1);
@@ -1133,6 +1136,7 @@
       const lockIcon = document.getElementById('teacherLockIcon');
       const btnLabel = document.getElementById('teacherBtnLabel');
       const btn = document.getElementById('teacherModeBtn');
+      const cashAdjustBtn = document.getElementById('teacherCashAdjustBtn'); // ★ 입출금 버튼
 
       if (isTeacherMode) {
         actionGroup.classList.remove('hidden');
@@ -1142,6 +1146,7 @@
         lockIcon.className = "fa-solid fa-unlock text-amber-400";
         btnLabel.textContent = "교사 ON";
         btn.className = "px-2.5 py-1.5 rounded-xl bg-amber-950/90 text-amber-300 text-xs font-black border border-amber-500/60 flex items-center gap-1 cursor-pointer";
+        if (cashAdjustBtn) { cashAdjustBtn.classList.remove('hidden'); cashAdjustBtn.classList.add('flex'); } // ★ 버튼 보이기
       } else {
         actionGroup.classList.add('hidden');
         actionGroup.classList.remove('flex');
@@ -1150,6 +1155,7 @@
         lockIcon.className = "fa-solid fa-lock";
         btnLabel.textContent = "교사 모드";
         btn.className = "px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer";
+        if (cashAdjustBtn) { cashAdjustBtn.classList.add('hidden'); cashAdjustBtn.classList.remove('flex'); } // ★ 버튼 숨기기
       }
       renderAll();
     }
@@ -1362,8 +1368,42 @@
     }
 
     /* ==========================================================================
-       6. 매수 / 매도 / 일괄 주문
+       6. 매수 / 매도 / 일괄 주문 / 교사 예수금 강제 조작
        ========================================================================== */
+
+    // ★ 새로 추가하는 교사 전용 예수금 조정 함수
+    function promptCashAdjustment() {
+      if (!isTeacherMode) return;
+      const sData = students[currentStudentName];
+      if (!sData) return;
+
+      const input = prompt(`[${currentStudentName}] 학생의 예수금을 조정합니다.\n\n- 입금(지급): 양수 입력 (예: 50000)\n- 출금(차감): 음수 입력 (예: -30000)\n\n현재 예수금: ${Number(sData.cash).toLocaleString()}원`, "0");
+      if (input === null) return;
+
+      const amount = parseInt(input.replace(/,/g, ''), 10);
+      
+      if (isNaN(amount) || amount === 0) {
+        showOrderToast("⚠️ 올바른 금액을 숫자로 입력해주세요.", "error");
+        return;
+      }
+
+      if (Number(sData.cash) + amount < 0) {
+        showOrderToast(`❌ 차감(출금)액이 현재 보유 예수금(${Number(sData.cash).toLocaleString()}원)보다 커서 마이너스가 될 수 없습니다.`, "error");
+        return;
+      }
+
+      sData.cash = Number(sData.cash) + amount;
+      
+      pushSingleStudentToCloud(currentStudentName);
+      renderAll();
+
+      if (amount > 0) {
+        showOrderToast(`💰 [${currentStudentName}] 학생에게 ${amount.toLocaleString()}원이 입금(지급)되었습니다.`, "success");
+      } else {
+        showOrderToast(`💸 [${currentStudentName}] 학생의 계좌에서 ${Math.abs(amount).toLocaleString()}원이 출금(차감)되었습니다.`, "sell");
+      }
+    }
+
     function ensureActiveAccountAndStock() {
       if (!stocks || stocks.length === 0) {
         setupDefaultStocks();
