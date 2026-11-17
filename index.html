@@ -51,7 +51,7 @@
           </div>
           <div>
             <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
-              <span id="loginRoomTitleDisplay">1반 거래소</span>
+              <span id="loginRoomTitleDisplay">1번 거래소</span>
             </h2>
             <p class="text-[11px] text-slate-400">우리 반을 확인하고 본인 이름을 클릭해 로그인하세요!</p>
           </div>
@@ -59,13 +59,13 @@
         <span id="loginCloudBadge" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-bold text-[10px]">연결 확인 중...</span>
       </div>
 
-      <!-- ★ 학급(채널 1~5반) 선택 탭 ★ -->
+      <!-- ★ 학급(채널 1~5번) 선택 탭 ★ -->
       <div class="bg-slate-900 p-1.5 rounded-2xl border border-slate-800 flex items-center justify-between gap-1">
-        <button type="button" onclick="switchClassRoom('class_1')" id="loginRoomBtn_class_1" class="flex-1 py-2 rounded-xl font-black text-xs transition-all cursor-pointer bg-indigo-600 text-white shadow">1반</button>
-        <button type="button" onclick="switchClassRoom('class_2')" id="loginRoomBtn_class_2" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">2반</button>
-        <button type="button" onclick="switchClassRoom('class_3')" id="loginRoomBtn_class_3" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">3반</button>
-        <button type="button" onclick="switchClassRoom('class_4')" id="loginRoomBtn_class_4" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">4반</button>
-        <button type="button" onclick="switchClassRoom('class_5')" id="loginRoomBtn_class_5" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">5반</button>
+        <button type="button" onclick="switchClassRoom('class_1')" id="loginRoomBtn_class_1" class="flex-1 py-2 rounded-xl font-black text-xs transition-all cursor-pointer bg-indigo-600 text-white shadow">1번</button>
+        <button type="button" onclick="switchClassRoom('class_2')" id="loginRoomBtn_class_2" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">2번</button>
+        <button type="button" onclick="switchClassRoom('class_3')" id="loginRoomBtn_class_3" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">3번</button>
+        <button type="button" onclick="switchClassRoom('class_4')" id="loginRoomBtn_class_4" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">4번</button>
+        <button type="button" onclick="switchClassRoom('class_5')" id="loginRoomBtn_class_5" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">5번</button>
       </div>
 
       <!-- STEP 1: 학생 이름 선택 그리드 -->
@@ -108,7 +108,7 @@
           <i class="fa-solid fa-chalkboard-user"></i>
         </div>
         <div>
-          <h3 class="font-black text-sm text-white"><span id="authModalRoomName" class="text-amber-300">1반</span> 교사 관리자 모드 접속</h3>
+          <h3 class="font-black text-sm text-white"><span id="authModalRoomName" class="text-amber-300">1번</span> 교사 관리자 모드 접속</h3>
           <p class="text-[11px] text-slate-400">해당 학급의 교사 전용 비밀번호를 입력하세요.</p>
         </div>
       </div>
@@ -148,11 +148,11 @@
           <h1 class="font-black text-sm md:text-base leading-none bg-gradient-to-r from-amber-300 via-rose-400 to-indigo-400 bg-clip-text text-transparent">KOSDAQ 클래스</h1>
           <!-- 학급(채널) 선택 드롭다운 -->
           <select id="headerRoomSelect" onchange="switchClassRoom(this.value)" class="bg-indigo-950 border border-indigo-500/50 text-indigo-300 font-black text-[11px] px-2 py-0.5 rounded-lg outline-none cursor-pointer">
-            <option value="class_1">1반 서버</option>
-            <option value="class_2">2반 서버</option>
-            <option value="class_3">3반 서버</option>
-            <option value="class_4">4반 서버</option>
-            <option value="class_5">5반 서버</option>
+            <option value="class_1">1번 서버</option>
+            <option value="class_2">2번 서버</option>
+            <option value="class_3">3번 서버</option>
+            <option value="class_4">4번 서버</option>
+            <option value="class_5">5번 서버</option>
           </select>
           <span id="cloudStatusBadge" class="hidden sm:flex text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="cloudStatusDot"></span>
@@ -230,7 +230,7 @@
   <!-- ================= 교사용 거시경제 상황 컨트롤 바 ================= -->
   <div id="teacherMacroBar" class="hidden bg-slate-900/95 border-b border-amber-500/30 px-4 py-2 flex-wrap items-center justify-between gap-2.5 z-10 flex-shrink-0">
     <div class="flex items-center gap-2">
-      <span id="macroRoomBadge" class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">1반 교사 컨트롤</span>
+      <span id="macroRoomBadge" class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">1번 교사 컨트롤</span>
       <span class="text-xs font-bold text-slate-200">다음 날 거시경제 국면:</span>
       <span id="economyStateDescription" class="text-xs font-extrabold text-amber-300">3단계: 보통 (랜덤 시장)</span>
     </div>
@@ -272,7 +272,7 @@
       <section class="flex-1 h-full flex flex-col bg-slate-950 overflow-y-auto">
         <div class="p-3 bg-indigo-950/30 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">1반</span>
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">1번</span>
             <span class="font-extrabold text-indigo-300 text-sm" id="hudStudentName">-</span>
             <span class="text-slate-500">님의 실시간 계좌</span>
           </div>
@@ -437,7 +437,7 @@
             <i class="fa-solid fa-trophy"></i>
           </div>
           <div>
-            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">1반</span> 실시간 랭킹 전광판</h2>
+            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">1번</span> 실시간 랭킹 전광판</h2>
             <p class="text-[11px] text-slate-400">우리 반 학생들의 투자 수익률과 전일 대비 순위 등락이 실시간으로 반영됩니다.</p>
           </div>
         </div>
@@ -477,7 +477,7 @@
         <button type="button" onclick="closeTutorialModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-slate-300 leading-relaxed">
-        <p>• <strong>반별 독립 채널 (1반~5반)</strong>: 상단에서 본인 학급(1반~5반)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
+        <p>• <strong>반별 독립 채널 (1번~5번)</strong>: 상단에서 본인 학급(1번~5번)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
         <p>• <strong>반 전용 링크 공유</strong>: 교사 모드 활성화 후 상단 <strong>[🔗 반 링크복사]</strong> 버튼을 누르면 해당 반으로 바로 접속되는 전용 주소(예: <code>?room=2</code>)가 복사됩니다.</p>
         <p>• <strong>학생 이용법</strong>: 본인 학급과 이름을 선택하고 선생님께 안내받은 <strong>개인 비밀번호</strong>를 입력해 로그인하세요.</p>
         <p>• <strong>선생님(교사 모드)</strong>: 우측 상단 <strong>[교사 모드]</strong> 버튼을 통해 로그인하면 우리 반 학생 명단/비밀번호 설정, 교사 비밀번호 변경, 거시경제 국면(1~5단계) 조절 및 <strong>[하루 마감]</strong> 기능을 사용할 수 있습니다.</p>
@@ -549,7 +549,7 @@
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-chalkboard-user text-amber-400 text-sm"></i>
-          <h3 class="font-extrabold text-sm text-slate-100"><span id="setupModalRoomBadge" class="text-amber-300">1반</span> 환경 설정 (다른 반과 독립 저장)</h3>
+          <h3 class="font-extrabold text-sm text-slate-100"><span id="setupModalRoomBadge" class="text-amber-300">1번</span> 환경 설정 (다른 반과 독립 저장)</h3>
         </div>
         <button type="button" onclick="closeClassSetupModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
@@ -559,7 +559,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
           <div>
             <label class="font-bold text-slate-200 block mb-1"><i class="fa-solid fa-tag text-amber-400 mr-1"></i>학급 표시 이름 (별칭)</label>
-            <input type="text" id="setupRoomCustomTitleInput" placeholder="예: 6학년 1반 (손인혁 선생님)"
+            <input type="text" id="setupRoomCustomTitleInput" placeholder="예: 6학년 1번 (손인혁 선생님)"
               class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 font-bold outline-none focus:border-indigo-500 select-text">
           </div>
           <div>
@@ -629,11 +629,11 @@
     const STORAGE_KEY_CURRENT_ROOM = 'class_stock_selected_room_v1';
 
     const ROOM_LABELS = {
-      class_1: "1반",
-      class_2: "2반",
-      class_3: "3반",
-      class_4: "4반",
-      class_5: "5반"
+      class_1: "1번",
+      class_2: "2번",
+      class_3: "3번",
+      class_4: "4번",
+      class_5: "5번"
     };
 
     const DEFAULT_STOCKS = [
@@ -752,7 +752,7 @@
     }
 
     /* ==========================================================================
-       3. 멀티 학급(1반 ~ 5반) 전환 및 Firebase 실시간 연동
+       3. 멀티 학급(1번 ~ 5번) 전환 및 Firebase 실시간 연동
        ========================================================================== */
     function detectInitialRoom() {
       const params = new URLSearchParams(window.location.search);
@@ -786,7 +786,7 @@
     }
 
     function updateRoomSelectorUI() {
-      const shortName = ROOM_LABELS[currentRoomId] || "1반";
+      const shortName = ROOM_LABELS[currentRoomId] || "1번";
       const displayTitle = roomCustomTitle ? `${shortName} (${roomCustomTitle})` : `${shortName} 거래소`;
 
       document.getElementById('headerRoomSelect').value = currentRoomId;
