@@ -33,6 +33,12 @@
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex flex-col">
 
+  <!-- ================= 실시간 주문 체결 토스트 알림 배너 (팝업 차단 방지용) ================= -->
+  <div id="orderToastBanner" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl border text-xs sm:text-sm font-black transition-all duration-200 pointer-events-none">
+    <i id="orderToastIcon" class="fa-solid fa-circle-check text-base"></i>
+    <span id="orderToastText">주문이 체결되었습니다!</span>
+  </div>
+
   <!-- ================= 학생 입장(반 선택 & 로그인) 오버레이 모달 ================= -->
   <div id="studentLoginOverlay" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="glass-panel w-full max-w-lg p-6 rounded-3xl border border-slate-700 shadow-2xl flex flex-col gap-4">
@@ -45,7 +51,7 @@
           </div>
           <div>
             <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
-              <span id="loginRoomTitleDisplay">1번 거래소</span>
+              <span id="loginRoomTitleDisplay">1반 거래소</span>
             </h2>
             <p class="text-[11px] text-slate-400">우리 반을 확인하고 본인 이름을 클릭해 로그인하세요!</p>
           </div>
@@ -53,13 +59,13 @@
         <span id="loginCloudBadge" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-bold text-[10px]">연결 확인 중...</span>
       </div>
 
-      <!-- ★ 학급(채널 1~5번) 선택 탭 ★ -->
+      <!-- ★ 학급(채널 1~5반) 선택 탭 ★ -->
       <div class="bg-slate-900 p-1.5 rounded-2xl border border-slate-800 flex items-center justify-between gap-1">
-        <button onclick="switchClassRoom('class_1')" id="loginRoomBtn_class_1" class="flex-1 py-2 rounded-xl font-black text-xs transition-all cursor-pointer bg-indigo-600 text-white shadow">1번</button>
-        <button onclick="switchClassRoom('class_2')" id="loginRoomBtn_class_2" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">2번</button>
-        <button onclick="switchClassRoom('class_3')" id="loginRoomBtn_class_3" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">3번</button>
-        <button onclick="switchClassRoom('class_4')" id="loginRoomBtn_class_4" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">4번</button>
-        <button onclick="switchClassRoom('class_5')" id="loginRoomBtn_class_5" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">5번</button>
+        <button type="button" onclick="switchClassRoom('class_1')" id="loginRoomBtn_class_1" class="flex-1 py-2 rounded-xl font-black text-xs transition-all cursor-pointer bg-indigo-600 text-white shadow">1반</button>
+        <button type="button" onclick="switchClassRoom('class_2')" id="loginRoomBtn_class_2" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">2반</button>
+        <button type="button" onclick="switchClassRoom('class_3')" id="loginRoomBtn_class_3" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">3반</button>
+        <button type="button" onclick="switchClassRoom('class_4')" id="loginRoomBtn_class_4" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">4반</button>
+        <button type="button" onclick="switchClassRoom('class_5')" id="loginRoomBtn_class_5" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">5반</button>
       </div>
 
       <!-- STEP 1: 학생 이름 선택 그리드 -->
@@ -79,14 +85,14 @@
         <input type="password" id="studentPinInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter') confirmStudentPinLogin()"
           class="w-48 bg-slate-950 border-2 border-slate-700 focus:border-indigo-500 rounded-xl px-3 py-2 text-center font-mono text-base text-white outline-none select-text tracking-widest">
         <div class="flex items-center gap-2 w-48">
-          <button onclick="cancelStudentPinPrompt()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs cursor-pointer">뒤로</button>
-          <button onclick="confirmStudentPinLogin()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-xs cursor-pointer shadow">입장하기</button>
+          <button type="button" onclick="cancelStudentPinPrompt()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs cursor-pointer">뒤로</button>
+          <button type="button" onclick="confirmStudentPinLogin()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl text-xs cursor-pointer shadow">입장하기</button>
         </div>
       </div>
 
       <!-- 하단 교사 접속 버튼 -->
       <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
-        <button onclick="openTeacherAuthModal()" class="text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer">
+        <button type="button" onclick="openTeacherAuthModal()" class="text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer">
           <i class="fa-solid fa-user-shield"></i> 선생님(교사 모드)으로 접속하기
         </button>
         <span class="text-[11px] text-slate-500">다학급 독립 서버 지원</span>
@@ -102,7 +108,7 @@
           <i class="fa-solid fa-chalkboard-user"></i>
         </div>
         <div>
-          <h3 class="font-black text-sm text-white"><span id="authModalRoomName" class="text-amber-300">1번</span> 교사 관리자 모드 접속</h3>
+          <h3 class="font-black text-sm text-white"><span id="authModalRoomName" class="text-amber-300">1반</span> 교사 관리자 모드 접속</h3>
           <p class="text-[11px] text-slate-400">해당 학급의 교사 전용 비밀번호를 입력하세요.</p>
         </div>
       </div>
@@ -125,8 +131,8 @@
       </div>
 
       <div class="flex items-center gap-2 pt-1">
-        <button onclick="closeTeacherAuthModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl cursor-pointer">취소</button>
-        <button onclick="confirmTeacherLogin()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl cursor-pointer">교사 모드 활성화</button>
+        <button type="button" onclick="closeTeacherAuthModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl cursor-pointer">취소</button>
+        <button type="button" onclick="confirmTeacherLogin()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl cursor-pointer">교사 모드 활성화</button>
       </div>
     </div>
   </div>
@@ -142,11 +148,11 @@
           <h1 class="font-black text-sm md:text-base leading-none bg-gradient-to-r from-amber-300 via-rose-400 to-indigo-400 bg-clip-text text-transparent">KOSDAQ 클래스</h1>
           <!-- 학급(채널) 선택 드롭다운 -->
           <select id="headerRoomSelect" onchange="switchClassRoom(this.value)" class="bg-indigo-950 border border-indigo-500/50 text-indigo-300 font-black text-[11px] px-2 py-0.5 rounded-lg outline-none cursor-pointer">
-            <option value="class_1">1번 서버</option>
-            <option value="class_2">2번 서버</option>
-            <option value="class_3">3번 서버</option>
-            <option value="class_4">4번 서버</option>
-            <option value="class_5">5번 서버</option>
+            <option value="class_1">1반 서버</option>
+            <option value="class_2">2반 서버</option>
+            <option value="class_3">3반 서버</option>
+            <option value="class_4">4반 서버</option>
+            <option value="class_5">5반 서버</option>
           </select>
           <span id="cloudStatusBadge" class="hidden sm:flex text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="cloudStatusDot"></span>
@@ -160,10 +166,10 @@
     <!-- 현재 학생 표시 & 뷰 전환 탭 -->
     <div class="flex items-center gap-2 md:gap-3">
       <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-        <button id="viewMarketBtn" onclick="switchMainView('market')" class="px-2.5 py-1 rounded-lg font-black transition-all bg-indigo-600 text-white shadow cursor-pointer">
+        <button type="button" id="viewMarketBtn" onclick="switchMainView('market')" class="px-2.5 py-1 rounded-lg font-black transition-all bg-indigo-600 text-white shadow cursor-pointer">
           <i class="fa-solid fa-chart-line mr-1"></i>거래소
         </button>
-        <button id="viewRankingBtn" onclick="switchMainView('ranking')" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
+        <button type="button" id="viewRankingBtn" onclick="switchMainView('ranking')" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
           <i class="fa-solid fa-trophy mr-1 text-amber-400"></i>랭킹
         </button>
       </div>
@@ -172,7 +178,7 @@
         <i class="fa-solid fa-user-check text-emerald-400"></i>
         <select id="studentSelect" onchange="onStudentChange(this.value)" class="bg-transparent font-black text-slate-100 outline-none cursor-pointer max-w-[100px] sm:max-w-[130px] truncate">
         </select>
-        <button onclick="openStudentLoginOverlay()" class="text-[10px] text-indigo-400 hover:underline ml-1 font-bold cursor-pointer" title="비밀번호 입력 후 다른 학생 계좌로 전환">계좌변경</button>
+        <button type="button" onclick="openStudentLoginOverlay()" class="text-[10px] text-indigo-400 hover:underline ml-1 font-bold cursor-pointer" title="비밀번호 입력 후 다른 학생 계좌로 전환">계좌변경</button>
       </div>
 
       <div class="hidden lg:flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs font-mono">
@@ -183,38 +189,38 @@
 
     <!-- 우측 컨트롤 -->
     <div class="flex items-center gap-1.5 md:gap-2">
-      <button onclick="openTutorialModal()" class="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold border border-amber-500/40 flex items-center gap-1 cursor-pointer">
+      <button type="button" onclick="openTutorialModal()" class="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold border border-amber-500/40 flex items-center gap-1 cursor-pointer">
         <i class="fa-solid fa-book-open"></i><span class="hidden sm:inline">설명서</span>
       </button>
 
-      <button id="teacherModeBtn" onclick="onTeacherBtnClick()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer">
+      <button type="button" id="teacherModeBtn" onclick="onTeacherBtnClick()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer">
         <i class="fa-solid fa-lock" id="teacherLockIcon"></i><span class="hidden md:inline" id="teacherBtnLabel">교사 모드</span>
       </button>
 
       <!-- 교사 모드일 때만 표시됨 -->
       <div id="teacherActionGroup" class="hidden items-center gap-1.5">
-        <button onclick="copyRoomShareLink()" class="px-2.5 py-1.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-xs font-bold border border-emerald-700 flex items-center gap-1 cursor-pointer" title="현재 반 전용 접속 링크 복사">
+        <button type="button" onclick="copyRoomShareLink()" class="px-2.5 py-1.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-xs font-bold border border-emerald-700 flex items-center gap-1 cursor-pointer" title="현재 반 전용 접속 링크 복사">
           <i class="fa-solid fa-link"></i><span class="hidden xl:inline">반 링크복사</span>
         </button>
 
-        <button id="undoTurnBtn" onclick="undoLastTurn()" disabled class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold border border-slate-700/60 flex items-center gap-1 transition-all cursor-not-allowed" title="직전 턴으로 되돌리기">
+        <button type="button" id="undoTurnBtn" onclick="undoLastTurn()" disabled class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold border border-slate-700/60 flex items-center gap-1 transition-all cursor-not-allowed" title="직전 턴으로 되돌리기">
           <i class="fa-solid fa-rotate-left"></i>
         </button>
 
-        <button onclick="exportBackupFile()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="우리 반 백업 저장">
+        <button type="button" onclick="exportBackupFile()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="우리 반 백업 저장">
           <i class="fa-solid fa-download text-emerald-400"></i>
         </button>
 
-        <button onclick="document.getElementById('backupFileInput').click()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="우리 반 백업 불러오기">
+        <button type="button" onclick="document.getElementById('backupFileInput').click()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="우리 반 백업 불러오기">
           <i class="fa-solid fa-upload text-blue-400"></i>
         </button>
         <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="importBackupFile(event)">
 
-        <button onclick="openClassSetupModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer">
+        <button type="button" onclick="openClassSetupModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer">
           <i class="fa-solid fa-sliders text-amber-400"></i><span class="hidden lg:inline">설정/비번</span>
         </button>
 
-        <button onclick="nextMarketTurn()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 via-amber-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white text-xs font-black flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer">
+        <button type="button" onclick="nextMarketTurn()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 via-amber-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white text-xs font-black flex items-center gap-1.5 shadow-lg active:scale-95 transition-all cursor-pointer">
           <i class="fa-solid fa-forward-step"></i><span>하루 마감</span>
         </button>
       </div>
@@ -224,17 +230,17 @@
   <!-- ================= 교사용 거시경제 상황 컨트롤 바 ================= -->
   <div id="teacherMacroBar" class="hidden bg-slate-900/95 border-b border-amber-500/30 px-4 py-2 flex-wrap items-center justify-between gap-2.5 z-10 flex-shrink-0">
     <div class="flex items-center gap-2">
-      <span id="macroRoomBadge" class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">1번 교사 컨트롤</span>
+      <span id="macroRoomBadge" class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">1반 교사 컨트롤</span>
       <span class="text-xs font-bold text-slate-200">다음 날 거시경제 국면:</span>
       <span id="economyStateDescription" class="text-xs font-extrabold text-amber-300">3단계: 보통 (랜덤 시장)</span>
     </div>
 
     <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
-      <button id="econBtn1" onclick="setEconomyPhase(1)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">1. 공황📉</button>
-      <button id="econBtn2" onclick="setEconomyPhase(2)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">2. 침체🌧️</button>
-      <button id="econBtn3" onclick="setEconomyPhase(3)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all bg-indigo-600 text-white shadow cursor-pointer">3. 보통⚖️</button>
-      <button id="econBtn4" onclick="setEconomyPhase(4)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">4. 호황🌤️</button>
-      <button id="econBtn5" onclick="setEconomyPhase(5)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">5. 대호황🚀</button>
+      <button type="button" id="econBtn1" onclick="setEconomyPhase(1)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">1. 공황📉</button>
+      <button type="button" id="econBtn2" onclick="setEconomyPhase(2)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">2. 침체🌧️</button>
+      <button type="button" id="econBtn3" onclick="setEconomyPhase(3)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-black transition-all bg-indigo-600 text-white shadow cursor-pointer">3. 보통⚖️</button>
+      <button type="button" id="econBtn4" onclick="setEconomyPhase(4)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">4. 호황🌤️</button>
+      <button type="button" id="econBtn5" onclick="setEconomyPhase(5)" class="econ-btn px-2.5 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">5. 대호황🚀</button>
     </div>
   </div>
 
@@ -266,7 +272,7 @@
       <section class="flex-1 h-full flex flex-col bg-slate-950 overflow-y-auto">
         <div class="p-3 bg-indigo-950/30 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">1번</span>
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">1반</span>
             <span class="font-extrabold text-indigo-300 text-sm" id="hudStudentName">-</span>
             <span class="text-slate-500">님의 실시간 계좌</span>
           </div>
@@ -359,11 +365,11 @@
             <span class="text-[9px] text-slate-500">내 계좌 즉시 체결</span>
           </div>
           <div class="grid grid-cols-2 gap-1.5 text-xs">
-            <button onclick="sellAllHoldings()" class="py-2 px-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-black flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all cursor-pointer">
+            <button type="button" onclick="sellAllHoldings()" class="py-2 px-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-black flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all cursor-pointer">
               <span class="flex items-center gap-1 text-[11px]"><i class="fa-solid fa-money-bill-transfer"></i>전량 매도</span>
               <span class="text-[9px] font-normal text-rose-400">보유주식 전액 환원</span>
             </button>
-            <button onclick="aiRandomBuy()" class="py-2 px-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-black flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all cursor-pointer">
+            <button type="button" onclick="aiRandomBuy()" class="py-2 px-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-black flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all cursor-pointer">
               <span class="flex items-center gap-1 text-[11px]"><i class="fa-solid fa-robot text-amber-400"></i>AI 매수</span>
               <span class="text-[9px] font-normal text-indigo-400">남은 예수금 풀 분산</span>
             </button>
@@ -371,8 +377,8 @@
         </div>
 
         <div class="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 mb-3">
-          <button id="orderTypeBuyBtn" onclick="setOrderType('buy')" class="flex-1 py-1.5 text-xs font-black rounded-lg transition-all bg-rose-600 text-white shadow cursor-pointer">매수</button>
-          <button id="orderTypeSellBtn" onclick="setOrderType('sell')" class="flex-1 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition-all cursor-pointer">매도</button>
+          <button type="button" id="orderTypeBuyBtn" onclick="setOrderType('buy')" class="flex-1 py-1.5 text-xs font-black rounded-lg transition-all bg-rose-600 text-white shadow cursor-pointer">매수</button>
+          <button type="button" id="orderTypeSellBtn" onclick="setOrderType('sell')" class="flex-1 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-200 rounded-lg transition-all cursor-pointer">매도</button>
         </div>
 
         <div class="space-y-3.5 flex-1">
@@ -390,18 +396,18 @@
               <span id="maxAffordableDisplay" class="text-indigo-400">가능: 0주</span>
             </div>
             <div class="flex items-center gap-1.5 mt-1">
-              <button onclick="adjustOrderQty(-10)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">-10</button>
-              <button onclick="adjustOrderQty(-1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">-1</button>
+              <button type="button" onclick="adjustOrderQty(-10)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">-10</button>
+              <button type="button" onclick="adjustOrderQty(-1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">-1</button>
               <input type="number" id="orderQtyInput" value="1" min="1" oninput="updateOrderCalculation()"
                 class="flex-1 bg-slate-950 border border-slate-800 rounded-lg py-1.5 text-center font-mono font-bold text-sm text-slate-100 focus:outline-none focus:border-indigo-500 select-text">
-              <button onclick="adjustOrderQty(1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">+1</button>
-              <button onclick="adjustOrderQty(10)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">+10</button>
+              <button type="button" onclick="adjustOrderQty(1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">+1</button>
+              <button type="button" onclick="adjustOrderQty(10)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">+10</button>
             </div>
             <div class="grid grid-cols-4 gap-1 mt-1.5 text-[10px] font-mono">
-              <button onclick="setQtyPercentage(0.1)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded text-slate-400 cursor-pointer">10%</button>
-              <button onclick="setQtyPercentage(0.25)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded text-slate-400 cursor-pointer">25%</button>
-              <button onclick="setQtyPercentage(0.5)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded text-slate-400 cursor-pointer">50%</button>
-              <button onclick="setQtyPercentage(1.0)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded font-bold text-amber-300 cursor-pointer">최대</button>
+              <button type="button" onclick="setQtyPercentage(0.1)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded text-slate-400 cursor-pointer">10%</button>
+              <button type="button" onclick="setQtyPercentage(0.25)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded text-slate-400 cursor-pointer">25%</button>
+              <button type="button" onclick="setQtyPercentage(0.5)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded text-slate-400 cursor-pointer">50%</button>
+              <button type="button" onclick="setQtyPercentage(1.0)" class="py-1 bg-slate-800/80 hover:bg-slate-700 rounded font-bold text-amber-300 cursor-pointer">최대</button>
             </div>
           </div>
 
@@ -417,7 +423,7 @@
           </div>
         </div>
 
-        <button id="submitOrderBtn" onclick="executeOrder()" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-sm shadow-lg transition-all flex items-center justify-center gap-1.5 mt-3 cursor-pointer">
+        <button type="button" id="submitOrderBtn" onclick="executeOrder()" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-sm shadow-lg transition-all flex items-center justify-center gap-1.5 mt-3 cursor-pointer">
           <span>매수 주문 전송</span>
         </button>
       </aside>
@@ -431,7 +437,7 @@
             <i class="fa-solid fa-trophy"></i>
           </div>
           <div>
-            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">1번</span> 실시간 랭킹 전광판</h2>
+            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">1반</span> 실시간 랭킹 전광판</h2>
             <p class="text-[11px] text-slate-400">우리 반 학생들의 투자 수익률과 전일 대비 순위 등락이 실시간으로 반영됩니다.</p>
           </div>
         </div>
@@ -468,16 +474,16 @@
     <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs p-5 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="font-extrabold text-base text-amber-300"><i class="fa-solid fa-book-open mr-1.5"></i>KOSDAQ 클래스 다학급 거래소 이용 안내</h3>
-        <button onclick="closeTutorialModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+        <button type="button" onclick="closeTutorialModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-slate-300 leading-relaxed">
-        <p>• <strong>반별 독립 채널 (1번~5번)</strong>: 상단에서 본인 학급(1번~5번)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
+        <p>• <strong>반별 독립 채널 (1반~5반)</strong>: 상단에서 본인 학급(1반~5반)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
         <p>• <strong>반 전용 링크 공유</strong>: 교사 모드 활성화 후 상단 <strong>[🔗 반 링크복사]</strong> 버튼을 누르면 해당 반으로 바로 접속되는 전용 주소(예: <code>?room=2</code>)가 복사됩니다.</p>
         <p>• <strong>학생 이용법</strong>: 본인 학급과 이름을 선택하고 선생님께 안내받은 <strong>개인 비밀번호</strong>를 입력해 로그인하세요.</p>
         <p>• <strong>선생님(교사 모드)</strong>: 우측 상단 <strong>[교사 모드]</strong> 버튼을 통해 로그인하면 우리 반 학생 명단/비밀번호 설정, 교사 비밀번호 변경, 거시경제 국면(1~5단계) 조절 및 <strong>[하루 마감]</strong> 기능을 사용할 수 있습니다.</p>
       </div>
       <div class="flex justify-end pt-2">
-        <button onclick="closeTutorialModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl cursor-pointer">닫기</button>
+        <button type="button" onclick="closeTutorialModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl cursor-pointer">닫기</button>
       </div>
     </div>
   </div>
@@ -491,7 +497,7 @@
       <div class="text-3xl mb-1">🚨</div>
       <h3 class="text-xl font-black text-slate-100">상한가 / 하한가 종목 뉴스</h3>
       <div id="limitNewsItemsContainer" class="space-y-2.5 my-4 max-h-60 overflow-y-auto text-left"></div>
-      <button onclick="closeLimitModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-rose-600 text-white font-extrabold rounded-xl text-xs shadow-lg cursor-pointer">
+      <button type="button" onclick="closeLimitModal()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-rose-600 text-white font-extrabold rounded-xl text-xs shadow-lg cursor-pointer">
         확인 후 일일 결산 보기
       </button>
     </div>
@@ -531,7 +537,7 @@
         <span id="summaryStudentDailyReturn" class="font-mono font-bold text-sm text-emerald-400">+0원 (+0.00%)</span>
       </div>
 
-      <button onclick="closeDailySummaryModal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-indigo-600 text-white font-extrabold rounded-xl text-xs shadow-lg cursor-pointer">
+      <button type="button" onclick="closeDailySummaryModal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-indigo-600 text-white font-extrabold rounded-xl text-xs shadow-lg cursor-pointer">
         다음 날 장 시작하기
       </button>
     </div>
@@ -543,9 +549,9 @@
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-chalkboard-user text-amber-400 text-sm"></i>
-          <h3 class="font-extrabold text-sm text-slate-100"><span id="setupModalRoomBadge" class="text-amber-300">1번</span> 환경 설정 (다른 반과 독립 저장)</h3>
+          <h3 class="font-extrabold text-sm text-slate-100"><span id="setupModalRoomBadge" class="text-amber-300">1반</span> 환경 설정 (다른 반과 독립 저장)</h3>
         </div>
-        <button onclick="closeClassSetupModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <button type="button" onclick="closeClassSetupModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div class="p-4 flex-1 overflow-y-auto space-y-5">
@@ -553,7 +559,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
           <div>
             <label class="font-bold text-slate-200 block mb-1"><i class="fa-solid fa-tag text-amber-400 mr-1"></i>학급 표시 이름 (별칭)</label>
-            <input type="text" id="setupRoomCustomTitleInput" placeholder="예: 6학년 1번 (손인혁 선생님)"
+            <input type="text" id="setupRoomCustomTitleInput" placeholder="예: 6학년 1반 (손인혁 선생님)"
               class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 font-bold outline-none focus:border-indigo-500 select-text">
           </div>
           <div>
@@ -570,9 +576,9 @@
               <i class="fa-solid fa-user-lock text-indigo-400"></i>우리 반 학생 명단 및 개인 비밀번호 설정
             </label>
             <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
-              <button onclick="autoAssignPins('seq')" class="px-2 py-1 rounded bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 font-bold cursor-pointer">번호순 비번(1001~)</button>
-              <button onclick="autoAssignPins('random')" class="px-2 py-1 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 font-bold cursor-pointer">랜덤 4자리 부여</button>
-              <button onclick="autoAssignPins('1234')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">전원 1234 통일</button>
+              <button type="button" onclick="autoAssignPins('seq')" class="px-2 py-1 rounded bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 font-bold cursor-pointer">번호순 비번(1001~)</button>
+              <button type="button" onclick="autoAssignPins('random')" class="px-2 py-1 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 font-bold cursor-pointer">랜덤 4자리 부여</button>
+              <button type="button" onclick="autoAssignPins('1234')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">전원 1234 통일</button>
             </div>
           </div>
           <p class="text-[11px] text-slate-400">
@@ -595,19 +601,19 @@
             <div>
               <label class="font-bold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-building text-amber-400"></i>우리 반 거래소 20개 종목 및 비밀 추세 조작</label>
             </div>
-            <button onclick="restoreDefaultStockNames()" class="text-rose-400 hover:underline text-[11px] cursor-pointer">종목 기본값 복원</button>
+            <button type="button" onclick="restoreDefaultStockNames()" class="text-rose-400 hover:underline text-[11px] cursor-pointer">종목 기본값 복원</button>
           </div>
           <div id="setupStockGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1"></div>
         </div>
       </div>
 
       <div class="p-4 border-t border-slate-800 flex items-center justify-between bg-slate-900/90">
-        <button onclick="resetAllGameData()" class="px-3 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 font-bold border border-rose-800 cursor-pointer">
+        <button type="button" onclick="resetAllGameData()" class="px-3 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 font-bold border border-rose-800 cursor-pointer">
           <i class="fa-solid fa-triangle-exclamation mr-1"></i>현재 반 데이터만 1일차 초기화
         </button>
         <div class="flex items-center gap-2">
-          <button onclick="closeClassSetupModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">닫기</button>
-          <button onclick="saveClassSetup()" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-black shadow-md cursor-pointer">우리 반 설정 저장 및 배포</button>
+          <button type="button" onclick="closeClassSetupModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">닫기</button>
+          <button type="button" onclick="saveClassSetup()" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-black shadow-md cursor-pointer">우리 반 설정 저장 및 배포</button>
         </div>
       </div>
     </div>
@@ -623,11 +629,11 @@
     const STORAGE_KEY_CURRENT_ROOM = 'class_stock_selected_room_v1';
 
     const ROOM_LABELS = {
-      class_1: "1번",
-      class_2: "2번",
-      class_3: "3번",
-      class_4: "4번",
-      class_5: "5번"
+      class_1: "1반",
+      class_2: "2반",
+      class_3: "3반",
+      class_4: "4반",
+      class_5: "5반"
     };
 
     const DEFAULT_STOCKS = [
@@ -677,9 +683,9 @@
     ];
 
     /* ==========================================================================
-       2. 전역 상태 변수 & 멀티 학급(class_1 ~ class_5) 관리
+       2. 전역 상태 변수 & 토스트 알림 함수
        ========================================================================== */
-    let currentRoomId = "class_1"; // 'class_1' ~ 'class_5'
+    let currentRoomId = "class_1";
     let roomCustomTitle = "";
     let roomTeacherPin = "10101";
 
@@ -700,6 +706,7 @@
     let firebaseDb = null;
     let currentRoomRef = null;
     let isCloudConnected = false;
+    let toastTimer = null;
 
     const ECON_CONFIGS = {
       1: { label: "1단계: 경제 공황 (대폭락장 📉)", color: "text-rose-400", bias: -0.16, volatility: 0.08, extremeChance: 0.12, extremeType: 'lower' },
@@ -709,24 +716,43 @@
       5: { label: "5단계: 경제 대호황 (불장 🚀)", color: "text-rose-500", bias: 0.16, volatility: 0.08, extremeChance: 0.12, extremeType: 'upper' }
     };
 
-    function getLocalKeyForRoom(roomId) {
-      return `class_stock_game_v7_${roomId}`;
-    }
-    function getSnapshotKeyForRoom(roomId) {
-      return `class_stock_undo_v7_${roomId}`;
-    }
-    function getMyNameKeyForRoom(roomId) {
-      return `class_stock_my_name_${roomId}`;
+    // 💡 브라우저 alert가 차단되어도 화면 상단에 선명하게 뜨는 주문 토스트 배너
+    function showOrderToast(message, type = 'success') {
+      const banner = document.getElementById('orderToastBanner');
+      const icon = document.getElementById('orderToastIcon');
+      const text = document.getElementById('orderToastText');
+      if (!banner) return;
+
+      if (toastTimer) clearTimeout(toastTimer);
+
+      text.textContent = message;
+      if (type === 'error') {
+        banner.className = "fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl border bg-rose-950/95 border-rose-500 text-rose-200 text-xs sm:text-sm font-black transition-all duration-200";
+        icon.className = "fa-solid fa-triangle-exclamation text-rose-400 text-base";
+      } else if (type === 'sell') {
+        banner.className = "fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl border bg-blue-950/95 border-blue-400 text-blue-100 text-xs sm:text-sm font-black transition-all duration-200";
+        icon.className = "fa-solid fa-circle-check text-blue-400 text-base";
+      } else {
+        banner.className = "fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-5 py-3 rounded-2xl shadow-2xl border bg-emerald-950/95 border-emerald-400 text-emerald-100 text-xs sm:text-sm font-black transition-all duration-200";
+        icon.className = "fa-solid fa-circle-check text-emerald-400 text-base";
+      }
+
+      toastTimer = setTimeout(() => {
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+      }, 2800);
     }
 
-    // Firebase 경로 구하기: 1번은 기존 데이터 유지를 위해 'kosdaq_class_room' 사용, 2~5번은 'kosdaq_multi_rooms/class_N' 사용!
+    function getLocalKeyForRoom(roomId) { return `class_stock_game_v7_${roomId}`; }
+    function getSnapshotKeyForRoom(roomId) { return `class_stock_undo_v7_${roomId}`; }
+    function getMyNameKeyForRoom(roomId) { return `class_stock_my_name_${roomId}`; }
     function getFirebasePathForRoom(roomId) {
       if (roomId === 'class_1') return 'kosdaq_class_room';
       return `kosdaq_multi_rooms/${roomId}`;
     }
 
     /* ==========================================================================
-       3. 멀티 학급(1번 ~ 5번) 전환 및 Firebase 실시간 연동
+       3. 멀티 학급(1반 ~ 5반) 전환 및 Firebase 실시간 연동
        ========================================================================== */
     function detectInitialRoom() {
       const params = new URLSearchParams(window.location.search);
@@ -747,13 +773,11 @@
       currentRoomId = roomId;
       localStorage.setItem(STORAGE_KEY_CURRENT_ROOM, roomId);
 
-      // 반을 바꾸면 보안을 위해 교사 모드를 해제하고 해당 반 학생 로그인 대기 상태로 전환
       isTeacherMode = false;
       applyTeacherModeUI();
       cancelStudentPinPrompt();
       updateRoomSelectorUI();
 
-      // 해당 반 로컬 데이터 우선 로드 후 클라우드 구독 전환
       loadRoomLocalData(roomId);
       const fbUrl = getFirebaseUrl();
       if (fbUrl) {
@@ -762,7 +786,7 @@
     }
 
     function updateRoomSelectorUI() {
-      const shortName = ROOM_LABELS[currentRoomId] || "1번";
+      const shortName = ROOM_LABELS[currentRoomId] || "1반";
       const displayTitle = roomCustomTitle ? `${shortName} (${roomCustomTitle})` : `${shortName} 거래소`;
 
       document.getElementById('headerRoomSelect').value = currentRoomId;
@@ -790,7 +814,7 @@
       const baseUrl = window.location.origin + window.location.pathname;
       const shareUrl = `${baseUrl}?room=${roomNum}`;
       navigator.clipboard.writeText(shareUrl).then(() => {
-        alert(`🔗 [${ROOM_LABELS[currentRoomId]} 전용 접속 링크]가 복사되었습니다!\n\n${shareUrl}\n\n이 주소를 동료 선생님이나 학생들에게 공유하면 접속 즉시 ${ROOM_LABELS[currentRoomId]} 서버로 연결됩니다.`);
+        showOrderToast(`🔗 ${ROOM_LABELS[currentRoomId]} 전용 링크가 복사되었습니다!`, 'success');
       });
     }
 
@@ -815,7 +839,6 @@
         }
         firebaseDb = firebase.database();
 
-        // 기존 반 리스너가 있으면 해제
         if (currentRoomRef) {
           currentRoomRef.off();
         }
@@ -827,44 +850,64 @@
           const cloudData = snapshot.val();
           updateCloudBadgeUI(true);
 
-          if (!cloudData) {
+          // 클라우드 방이 비어 있거나 종목/학생이 없으면 초기 데이터를 즉시 업로드
+          if (!cloudData || !cloudData.stocks || !cloudData.students) {
+            if (!stocks || stocks.length === 0) setupDefaultStocks();
+            if (!students || Object.keys(students).length === 0) setupDefaultStudents();
             pushFullStateToCloud();
             return;
           }
 
           const prevDay = marketDay;
-          marketDay = cloudData.marketDay || 1;
-          seedMoney = cloudData.seedMoney || 10000000;
-          economyPhase = cloudData.economyPhase || 3;
+          marketDay = Number(cloudData.marketDay) || 1;
+          seedMoney = Number(cloudData.seedMoney) || 10000000;
+          economyPhase = Number(cloudData.economyPhase) || 3;
           roomCustomTitle = cloudData.roomCustomTitle || "";
           roomTeacherPin = cloudData.roomTeacherPin ? String(cloudData.roomTeacherPin) : "10101";
           prevTurnStudentAssets = cloudData.prevTurnStudentAssets || {};
           prevTurnStudentRanks = cloudData.prevTurnStudentRanks || {};
 
-          if (cloudData.stocks) {
-            stocks = cloudData.stocks.map(s => ({
-              ...s,
-              history: s.history || [s.price]
-            }));
-          }
+          // Firebase가 배열 또는 객체 형태로 반환하더라도 안전하게 배열로 변환
+          const rawStocks = Array.isArray(cloudData.stocks) ? cloudData.stocks : Object.values(cloudData.stocks);
+          stocks = rawStocks.filter(Boolean).map(s => ({
+            ...s,
+            code: String(s.code),
+            price: Number(s.price) || 1000,
+            basePrice: Number(s.basePrice || s.price) || 1000,
+            change: Number(s.change) || 0,
+            rate: Number(s.rate) || 0,
+            history: Array.isArray(s.history) ? s.history.map(Number) : [Number(s.price) || 1000]
+          }));
 
-          if (cloudData.students) {
-            const restoredStudents = {};
-            Object.entries(cloudData.students).forEach(([sName, sObj]) => {
-              restoredStudents[sName] = {
-                cash: sObj.cash !== undefined ? sObj.cash : seedMoney,
-                pin: sObj.pin ? String(sObj.pin) : "1234",
-                holdings: sObj.holdings || {}
-              };
-            });
-            students = restoredStudents;
-          }
+          const restoredStudents = {};
+          Object.entries(cloudData.students).forEach(([sName, sObj]) => {
+            if (!sObj) return;
+            const cleanHoldings = {};
+            if (sObj.holdings && typeof sObj.holdings === 'object') {
+              Object.entries(sObj.holdings).forEach(([kCode, hVal]) => {
+                if (hVal && Number(hVal.qty) > 0) {
+                  cleanHoldings[String(kCode)] = {
+                    qty: Number(hVal.qty),
+                    totalCost: Number(hVal.totalCost) || 0
+                  };
+                }
+              });
+            }
+            restoredStudents[sName] = {
+              cash: sObj.cash !== undefined ? Number(sObj.cash) : seedMoney,
+              pin: sObj.pin ? String(sObj.pin) : "1234",
+              holdings: cleanHoldings
+            };
+          });
+          students = restoredStudents;
 
           const savedMyName = localStorage.getItem(getMyNameKeyForRoom(currentRoomId));
           if (!currentStudentName || !students[currentStudentName]) {
             currentStudentName = (savedMyName && students[savedMyName]) ? savedMyName : Object.keys(students)[0];
           }
-          if (!selectedStockCode && stocks.length > 0) selectedStockCode = stocks[0].code;
+          if (!selectedStockCode || !stocks.some(x => x.code === selectedStockCode)) {
+            selectedStockCode = stocks[0] ? stocks[0].code : null;
+          }
 
           saveLocalMirror();
           updateRoomSelectorUI();
@@ -875,6 +918,10 @@
           if (!isTeacherMode && marketDay > prevDay && prevDay >= 1) {
             showDailySummaryModal(marketDay - 1);
           }
+        }, (error) => {
+          console.error("Firebase 읽기 권한 오류:", error);
+          updateCloudBadgeUI(false);
+          showOrderToast("⚠️ 클라우드 읽기 권한 오류: Firebase 규칙(.read: true)을 확인하세요!", "error");
         });
       } catch (err) {
         console.error("Firebase 연결 오류:", err);
@@ -923,6 +970,9 @@
           prevTurnStudentAssets,
           prevTurnStudentRanks,
           updatedAt: Date.now()
+        }).catch(err => {
+          console.error("클라우드 저장 실패:", err);
+          showOrderToast("⚠️ 클라우드 쓰기 거부됨: Firebase 규칙(.write: true)을 확인하세요!", "error");
         });
       }
     }
@@ -932,9 +982,12 @@
       if (isCloudConnected && firebaseDb && students[studentName]) {
         const path = getFirebasePathForRoom(currentRoomId);
         firebaseDb.ref(`${path}/students/${studentName}`).set({
-          cash: students[studentName].cash,
-          pin: students[studentName].pin || "1234",
+          cash: Number(students[studentName].cash) || 0,
+          pin: String(students[studentName].pin || "1234"),
           holdings: students[studentName].holdings || {}
+        }).catch(err => {
+          console.error("학생 주문 클라우드 반영 실패:", err);
+          showOrderToast("⚠️ 서버 저장 실패! Firebase 규칙(.write: true)을 확인해주세요.", "error");
         });
       }
     }
@@ -953,7 +1006,7 @@
       if (!grid) return;
       const names = Object.keys(students);
       grid.innerHTML = names.map(name => `
-        <button onclick="promptStudentPin('${name}')"
+        <button type="button" onclick="promptStudentPin('${name}')"
           class="py-3 px-2 rounded-2xl bg-slate-900 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-400 text-slate-100 font-black text-xs sm:text-sm shadow transition-all active:scale-95 cursor-pointer truncate flex items-center justify-center gap-1">
           <span>${name}</span>
         </button>
@@ -989,10 +1042,12 @@
       const correctPin = String(students[pendingPinStudentName].pin || "1234");
 
       if (inputPin === correctPin) {
+        const targetName = pendingPinStudentName;
         cancelStudentPinPrompt();
-        selectMyStudentAccount(pendingPinStudentName);
+        selectMyStudentAccount(targetName);
+        showOrderToast(`👋 환영합니다! [${targetName}] 계좌에 접속했습니다.`, 'success');
       } else {
-        alert("비밀번호가 일치하지 않습니다! 다시 확인해 주세요.");
+        showOrderToast("❌ 비밀번호가 일치하지 않습니다! 다시 확인해 주세요.", "error");
         document.getElementById('studentPinInput').value = "";
         document.getElementById('studentPinInput').focus();
       }
@@ -1000,6 +1055,9 @@
 
     function selectMyStudentAccount(name) {
       currentStudentName = name;
+      if (!students[currentStudentName]) {
+        students[currentStudentName] = { cash: seedMoney, pin: "1234", holdings: {} };
+      }
       localStorage.setItem(getMyNameKeyForRoom(currentRoomId), name);
       document.getElementById('studentLoginOverlay').classList.add('hidden');
       renderAll();
@@ -1013,10 +1071,9 @@
 
     function onTeacherBtnClick() {
       if (isTeacherMode) {
-        if (confirm("교사 관리자 모드를 종료하고 학생 화면으로 전환하시겠습니까?")) {
-          isTeacherMode = false;
-          applyTeacherModeUI();
-        }
+        isTeacherMode = false;
+        applyTeacherModeUI();
+        showOrderToast("학생 화면 모드로 전환되었습니다.", "sell");
       } else {
         openTeacherAuthModal();
       }
@@ -1039,9 +1096,8 @@
       const pw = document.getElementById('teacherPwInput').value.trim();
       const dbUrl = document.getElementById('firebaseUrlInput').value.trim();
 
-      // 각 반의 전용 교사 비밀번호 또는 마스터 비밀번호(10101) 허용
       if (pw !== String(roomTeacherPin || "10101") && pw !== "10101") {
-        alert("교사 관리자 비밀번호가 일치하지 않습니다!");
+        showOrderToast("❌ 교사 관리자 비밀번호가 일치하지 않습니다!", "error");
         return;
       }
 
@@ -1054,6 +1110,7 @@
       closeTeacherAuthModal();
       document.getElementById('studentLoginOverlay').classList.add('hidden');
       applyTeacherModeUI();
+      showOrderToast("👑 교사 관리자 모드가 활성화되었습니다!", "success");
     }
 
     function applyTeacherModeUI() {
@@ -1093,12 +1150,12 @@
           const data = JSON.parse(saved);
           roomCustomTitle = data.roomCustomTitle || "";
           roomTeacherPin = data.roomTeacherPin || "10101";
-          marketDay = data.marketDay || 1;
-          seedMoney = data.seedMoney || 10000000;
+          marketDay = Number(data.marketDay) || 1;
+          seedMoney = Number(data.seedMoney) || 10000000;
           stocks = data.stocks || [];
           students = data.students || {};
           currentStudentName = data.currentStudentName || Object.keys(students)[0];
-          economyPhase = data.economyPhase || 3;
+          economyPhase = Number(data.economyPhase) || 3;
           prevTurnStudentAssets = data.prevTurnStudentAssets || {};
           prevTurnStudentRanks = data.prevTurnStudentRanks || {};
         } catch (e) {
@@ -1111,12 +1168,19 @@
       if (!stocks || stocks.length === 0) setupDefaultStocks();
       stocks.forEach(s => { if (!s.trend) s.trend = "none"; });
       if (!students || Object.keys(students).length === 0) setupDefaultStudents();
-      Object.values(students).forEach(st => { if (!st.pin) st.pin = "1234"; });
-      if (!selectedStockCode && stocks.length > 0) selectedStockCode = stocks[0].code;
+      Object.values(students).forEach(st => {
+        if (!st.pin) st.pin = "1234";
+        if (!st.holdings) st.holdings = {};
+      });
+      if (!selectedStockCode || !stocks.some(x => x.code === selectedStockCode)) {
+        selectedStockCode = stocks[0].code;
+      }
 
       const savedMyName = localStorage.getItem(getMyNameKeyForRoom(roomId));
       if (savedMyName && students[savedMyName]) {
         currentStudentName = savedMyName;
+      } else if (!currentStudentName || !students[currentStudentName]) {
+        currentStudentName = Object.keys(students)[0];
       }
 
       updateRoomSelectorUI();
@@ -1204,7 +1268,6 @@
     function nextMarketTurn() {
       if (!isTeacherMode) return;
       const econConfig = ECON_CONFIGS[economyPhase];
-      if (!confirm(`[${ROOM_LABELS[currentRoomId]} · ${marketDay}일차 마감]\n현재 경제 국면: '${econConfig.label}'\n하루를 마감하고 우리 반 주가를 변동시키겠습니까?`)) return;
 
       prevTurnStudentAssets = {};
       const currentRankedBeforeTurn = Object.keys(students).map(name => ({
@@ -1285,94 +1348,141 @@
     }
 
     /* ==========================================================================
-       6. 매수 / 매도 / 일괄 주문
+       6. ★ 매수 / 매도 / 일괄 주문 (절대 멈추지 않도록 방어 로직 & 토스트 알림 적용) ★
        ========================================================================== */
+    function ensureActiveAccountAndStock() {
+      if (!stocks || stocks.length === 0) {
+        setupDefaultStocks();
+      }
+      if (!selectedStockCode || !stocks.some(x => String(x.code) === String(selectedStockCode))) {
+        selectedStockCode = stocks[0].code;
+      }
+      if (!currentStudentName) {
+        currentStudentName = Object.keys(students)[0] || DEFAULT_STUDENTS[0];
+      }
+      if (!students[currentStudentName]) {
+        students[currentStudentName] = { cash: seedMoney, pin: "1234", holdings: {} };
+      }
+      if (!students[currentStudentName].holdings) {
+        students[currentStudentName].holdings = {};
+      }
+    }
+
     function executeOrder() {
-      const s = stocks.find(x => x.code === selectedStockCode);
-      if (!s) return;
-      const sData = students[currentStudentName];
-      if (!sData) return;
+      ensureActiveAccountAndStock();
 
-      const qty = parseInt(document.getElementById('orderQtyInput').value) || 0;
-      if (qty <= 0) { alert('주문 수량을 1주 이상 입력해주세요.'); return; }
-
-      const totalCost = qty * s.price;
-
-      if (currentOrderType === 'buy') {
-        if (sData.cash < totalCost) {
-          alert(`예수금이 부족합니다!\n(필요: ${totalCost.toLocaleString()}원 / 보유: ${sData.cash.toLocaleString()}원)`);
-          return;
-        }
-        sData.cash -= totalCost;
-        if (!sData.holdings[s.code]) sData.holdings[s.code] = { qty: 0, totalCost: 0 };
-        sData.holdings[s.code].qty += qty;
-        sData.holdings[s.code].totalCost += totalCost;
-        alert(`[${currentStudentName}] 매수 체결 완료!\n${s.name} ${qty}주 (${totalCost.toLocaleString()}원)`);
-      } else {
-        const currentQty = sData.holdings[s.code] ? sData.holdings[s.code].qty : 0;
-        if (currentQty < qty) {
-          alert(`보유 주식이 부족합니다! (현재 보유: ${currentQty}주)`);
-          return;
-        }
-        const avgPrice = sData.holdings[s.code].totalCost / currentQty;
-        sData.cash += totalCost;
-        sData.holdings[s.code].qty -= qty;
-        sData.holdings[s.code].totalCost -= avgPrice * qty;
-        if (sData.holdings[s.code].qty <= 0) delete sData.holdings[s.code];
-        alert(`[${currentStudentName}] 매도 체결 완료!\n${s.name} ${qty}주 (${totalCost.toLocaleString()}원)`);
+      const s = stocks.find(x => String(x.code) === String(selectedStockCode));
+      if (!s) {
+        showOrderToast("❌ 선택된 종목을 찾을 수 없습니다. 좌측에서 종목을 다시 클릭하세요.", "error");
+        return;
       }
 
-      pushSingleStudentToCloud(currentStudentName);
-      renderAll();
+      const sData = students[currentStudentName];
+      const qtyInputEl = document.getElementById('orderQtyInput');
+      const qty = Math.floor(Number(qtyInputEl ? qtyInputEl.value : 0));
+
+      if (!qty || qty <= 0) {
+        showOrderToast("⚠️ 주문 수량을 1주 이상 입력해주세요!", "error");
+        return;
+      }
+
+      const stockPrice = Number(s.price) || 0;
+      const totalCost = qty * stockPrice;
+
+      if (currentOrderType === 'buy') {
+        if (Number(sData.cash) < totalCost) {
+          showOrderToast(`❌ 예수금 부족! (필요: ${totalCost.toLocaleString()}원 / 보유: ${Number(sData.cash).toLocaleString()}원)`, "error");
+          return;
+        }
+        sData.cash = Number(sData.cash) - totalCost;
+        if (!sData.holdings[s.code]) {
+          sData.holdings[s.code] = { qty: 0, totalCost: 0 };
+        }
+        sData.holdings[s.code].qty = Number(sData.holdings[s.code].qty) + qty;
+        sData.holdings[s.code].totalCost = Number(sData.holdings[s.code].totalCost) + totalCost;
+
+        pushSingleStudentToCloud(currentStudentName);
+        renderAll();
+        showOrderToast(`✅ [${currentStudentName}] ${s.name} ${qty}주 매수 체결! (-${totalCost.toLocaleString()}원)`, 'success');
+      } else {
+        const currentQty = (sData.holdings && sData.holdings[s.code]) ? Number(sData.holdings[s.code].qty) : 0;
+        if (currentQty < qty) {
+          showOrderToast(`❌ 보유 주식 부족! (${s.name} 현재 보유: ${currentQty}주)`, "error");
+          return;
+        }
+        const avgPrice = Number(sData.holdings[s.code].totalCost) / currentQty;
+        sData.cash = Number(sData.cash) + totalCost;
+        sData.holdings[s.code].qty = currentQty - qty;
+        sData.holdings[s.code].totalCost = Math.max(0, Math.round(Number(sData.holdings[s.code].totalCost) - (avgPrice * qty)));
+
+        if (sData.holdings[s.code].qty <= 0) {
+          delete sData.holdings[s.code];
+        }
+
+        pushSingleStudentToCloud(currentStudentName);
+        renderAll();
+        showOrderToast(`💰 [${currentStudentName}] ${s.name} ${qty}주 매도 체결! (+${totalCost.toLocaleString()}원)`, 'sell');
+      }
     }
 
     function sellAllHoldings() {
+      ensureActiveAccountAndStock();
       const sData = students[currentStudentName];
-      if (!sData) return;
-      const holdingCodes = Object.keys(sData.holdings || {}).filter(code => sData.holdings[code].qty > 0);
-      if (holdingCodes.length === 0) { alert(`[${currentStudentName}] 보유 중인 주식이 없습니다.`); return; }
+      const holdingCodes = Object.keys(sData.holdings || {}).filter(code => Number(sData.holdings[code].qty) > 0);
+
+      if (holdingCodes.length === 0) {
+        showOrderToast(`⚠️ [${currentStudentName}] 현재 보유 중인 주식이 없습니다.`, "error");
+        return;
+      }
 
       let totalSoldAmount = 0;
       holdingCodes.forEach(code => {
-        const s = stocks.find(x => x.code === code);
+        const s = stocks.find(x => String(x.code) === String(code));
         if (s) {
-          totalSoldAmount += s.price * sData.holdings[code].qty;
+          totalSoldAmount += Number(s.price) * Number(sData.holdings[code].qty);
           delete sData.holdings[code];
         }
       });
 
-      sData.cash += totalSoldAmount;
+      sData.cash = Number(sData.cash) + totalSoldAmount;
       pushSingleStudentToCloud(currentStudentName);
       renderAll();
-      alert(`[${currentStudentName}] 전량 매도 완료! 총 ${totalSoldAmount.toLocaleString()}원 입금`);
+      showOrderToast(`💰 [${currentStudentName}] 전량 매도 완료! (+${totalSoldAmount.toLocaleString()}원 입금)`, "sell");
     }
 
     function aiRandomBuy() {
+      ensureActiveAccountAndStock();
       const sData = students[currentStudentName];
-      if (!sData) return;
-      const minStockPrice = Math.min(...stocks.map(s => s.price));
-      if (sData.cash < minStockPrice) { alert(`예수금이 부족합니다!`); return; }
+      const minStockPrice = Math.min(...stocks.map(s => Number(s.price)));
+
+      if (Number(sData.cash) < minStockPrice) {
+        showOrderToast(`❌ 예수금이 부족하여 AI 매수를 실행할 수 없습니다!`, "error");
+        return;
+      }
 
       let loopSafety = 0;
-      while (sData.cash >= minStockPrice && loopSafety < 80) {
+      let totalSpent = 0;
+      while (Number(sData.cash) >= minStockPrice && loopSafety < 80) {
         loopSafety++;
         const randomStock = stocks[Math.floor(Math.random() * stocks.length)];
-        if (sData.cash >= randomStock.price) {
-          const maxPossible = Math.floor(sData.cash / randomStock.price);
+        const sPrice = Number(randomStock.price);
+        if (Number(sData.cash) >= sPrice) {
+          const maxPossible = Math.floor(Number(sData.cash) / sPrice);
           const buyQty = Math.max(1, Math.floor(Math.random() * Math.min(maxPossible, 5)) + 1);
-          const cost = randomStock.price * buyQty;
-          if (sData.cash >= cost) {
-            sData.cash -= cost;
+          const cost = sPrice * buyQty;
+          if (Number(sData.cash) >= cost) {
+            sData.cash = Number(sData.cash) - cost;
+            totalSpent += cost;
             if (!sData.holdings[randomStock.code]) sData.holdings[randomStock.code] = { qty: 0, totalCost: 0 };
-            sData.holdings[randomStock.code].qty += buyQty;
-            sData.holdings[randomStock.code].totalCost += cost;
+            sData.holdings[randomStock.code].qty = Number(sData.holdings[randomStock.code].qty) + buyQty;
+            sData.holdings[randomStock.code].totalCost = Number(sData.holdings[randomStock.code].totalCost) + cost;
           }
         }
       }
 
       pushSingleStudentToCloud(currentStudentName);
       renderAll();
-      alert(`🤖 [${currentStudentName}] AI 자동 분산 매수가 완료되었습니다!`);
+      showOrderToast(`🤖 [${currentStudentName}] AI 자동 분산 매수 완료! (${totalSpent.toLocaleString()}원 투자)`, "success");
     }
 
     /* ==========================================================================
@@ -1400,6 +1510,7 @@
     }
 
     function renderAll() {
+      ensureActiveAccountAndStock();
       document.getElementById('turnDisplay').textContent = `${marketDay}일차`;
       document.getElementById('initSeedMoneyDisplay').textContent = `${seedMoney.toLocaleString()}원`;
       renderStudentSelector();
@@ -1440,15 +1551,16 @@
       let stockValue = 0;
       let totalCost = 0;
       for (const [code, h] of Object.entries(sData.holdings || {})) {
-        const s = stocks.find(x => x.code === code);
-        if (s && h.qty > 0) {
-          stockValue += s.price * h.qty;
-          totalCost += h.totalCost;
+        const s = stocks.find(x => String(x.code) === String(code));
+        if (s && Number(h.qty) > 0) {
+          stockValue += Number(s.price) * Number(h.qty);
+          totalCost += Number(h.totalCost);
         }
       }
-      const totalAsset = sData.cash + stockValue;
+      const cashVal = Number(sData.cash) || 0;
+      const totalAsset = cashVal + stockValue;
       const profitRate = ((totalAsset - seedMoney) / seedMoney) * 100;
-      return { cash: sData.cash, stockValue, totalAsset, profitRate, totalCost };
+      return { cash: cashVal, stockValue, totalAsset, profitRate, totalCost };
     }
 
     function renderStudentHUD() {
@@ -1465,7 +1577,7 @@
     function renderStudentPortfolio() {
       const tbody = document.getElementById('studentPortfolioTableBody');
       const sData = students[currentStudentName] || { cash: seedMoney, holdings: {} };
-      const entries = Object.entries(sData.holdings || {}).filter(([_, h]) => h.qty > 0);
+      const entries = Object.entries(sData.holdings || {}).filter(([_, h]) => Number(h.qty) > 0);
       document.getElementById('portfolioCountBadge').textContent = `${entries.length}종목`;
 
       if (entries.length === 0) {
@@ -1474,19 +1586,21 @@
       }
 
       tbody.innerHTML = entries.map(([code, h]) => {
-        const s = stocks.find(x => x.code === code);
+        const s = stocks.find(x => String(x.code) === String(code));
         if (!s) return '';
-        const avgPrice = Math.round(h.totalCost / h.qty);
-        const evalValue = s.price * h.qty;
-        const profit = evalValue - h.totalCost;
-        const profitRate = (profit / h.totalCost) * 100;
+        const qty = Number(h.qty);
+        const cost = Number(h.totalCost);
+        const avgPrice = Math.round(cost / qty);
+        const evalValue = Number(s.price) * qty;
+        const profit = evalValue - cost;
+        const profitRate = cost > 0 ? (profit / cost) * 100 : 0;
         const sign = profit >= 0 ? '+' : '';
         const colorClass = profit >= 0 ? 'price-up' : 'price-down';
 
         return `
           <tr class="hover:bg-slate-800/30">
-            <td class="py-1.5 font-bold text-slate-200 cursor-pointer" onclick="selectStock('${code}')">${s.name}</td>
-            <td class="py-1.5 font-bold text-slate-100">${h.qty.toLocaleString()}주</td>
+            <td class="py-1.5 font-bold text-slate-200 cursor-pointer" onclick="selectStock('${s.code}')">${s.name}</td>
+            <td class="py-1.5 font-bold text-slate-100">${qty.toLocaleString()}주</td>
             <td class="py-1.5 text-slate-400">${avgPrice.toLocaleString()}원</td>
             <td class="py-1.5 font-bold text-slate-100">${evalValue.toLocaleString()}원</td>
             <td class="py-1.5 text-right font-bold ${colorClass}">${sign}${profitRate.toFixed(2)}%</td>
@@ -1496,7 +1610,7 @@
     }
 
     function renderStockHoldersList() {
-      const s = stocks.find(x => x.code === selectedStockCode);
+      const s = stocks.find(x => String(x.code) === String(selectedStockCode));
       if (!s) return;
       document.getElementById('stockHoldersTitle').textContent = `[${s.name}] 주주 명부`;
       const tbody = document.getElementById('stockHoldersTableBody');
@@ -1505,9 +1619,10 @@
       const holders = [];
       Object.keys(students).forEach(name => {
         const h = (students[name].holdings || {})[s.code];
-        if (h && h.qty > 0) {
-          totalIssuedQty += h.qty;
-          holders.push({ name, qty: h.qty, evalValue: s.price * h.qty });
+        if (h && Number(h.qty) > 0) {
+          const q = Number(h.qty);
+          totalIssuedQty += q;
+          holders.push({ name, qty: q, evalValue: Number(s.price) * q });
         }
       });
 
@@ -1553,7 +1668,7 @@
         let rankChangeBadge = `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-400 font-mono text-[11px] font-bold">- (0)</span>`;
 
         if (prevRank !== undefined) {
-          const diff = prevRank - currentRank;
+          const diff = Number(prevRank) - currentRank;
           if (diff > 0) {
             rankChangeBadge = `<span class="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-400 font-mono text-[11px] font-black"><i class="fa-solid fa-caret-up text-xs"></i>+${diff}계단</span>`;
           } else if (diff < 0) {
@@ -1565,10 +1680,10 @@
 
         const isCurrent = item.name === currentStudentName;
         const actionBtn = isTeacherMode
-          ? `<button onclick="switchToStudent('${item.name}')" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-bold transition-all cursor-pointer">교사 열람</button>`
+          ? `<button type="button" onclick="switchToStudent('${item.name}')" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-bold transition-all cursor-pointer">교사 열람</button>`
           : (isCurrent
               ? `<span class="text-[11px] text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>접속 중</span>`
-              : `<button onclick="openStudentLoginOverlay(); promptStudentPin('${item.name}');" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white text-[11px] font-bold transition-all cursor-pointer"><i class="fa-solid fa-lock text-[9px] mr-1"></i>비번 로그인</button>`);
+              : `<button type="button" onclick="openStudentLoginOverlay(); promptStudentPin('${item.name}');" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white text-[11px] font-bold transition-all cursor-pointer"><i class="fa-solid fa-lock text-[9px] mr-1"></i>비번 로그인</button>`);
 
         return `
           <tr class="hover:bg-slate-800/40 transition-colors ${isCurrent ? 'bg-indigo-950/30 border-l-4 border-indigo-500' : ''}">
@@ -1605,13 +1720,13 @@
       const query = document.getElementById('stockSearchInput').value.trim().toLowerCase();
       const sortType = document.getElementById('sortSelect').value;
 
-      let list = stocks.filter(s => s.name.toLowerCase().includes(query) || s.code.includes(query));
+      let list = stocks.filter(s => s.name.toLowerCase().includes(query) || String(s.code).includes(query));
       if (sortType === 'rateDesc') list.sort((a, b) => b.rate - a.rate);
       else if (sortType === 'rateAsc') list.sort((a, b) => a.rate - b.rate);
       else if (sortType === 'priceDesc') list.sort((a, b) => b.price - a.price);
 
       container.innerHTML = list.map(s => {
-        const isSelected = s.code === selectedStockCode;
+        const isSelected = String(s.code) === String(selectedStockCode);
         const isUp = s.change > 0, isDown = s.change < 0;
         const sign = isUp ? '+' : '';
         const colorClass = isUp ? 'price-up' : (isDown ? 'price-down' : 'text-slate-400');
@@ -1628,8 +1743,8 @@
               <div class="text-[10px] font-mono text-slate-500 mt-0.5">${s.code}</div>
             </div>
             <div class="text-right font-mono">
-              <div class="font-bold text-xs text-slate-100">${s.price.toLocaleString()}원</div>
-              <div class="text-[11px] font-semibold ${colorClass}">${sign}${s.rate.toFixed(2)}%</div>
+              <div class="font-bold text-xs text-slate-100">${Number(s.price).toLocaleString()}원</div>
+              <div class="text-[11px] font-semibold ${colorClass}">${sign}${Number(s.rate).toFixed(2)}%</div>
             </div>
           </div>
         `;
@@ -1637,7 +1752,7 @@
     }
 
     function selectStock(code) {
-      selectedStockCode = code;
+      selectedStockCode = String(code);
       renderStockList();
       renderDetailView();
       renderStockHoldersList();
@@ -1645,19 +1760,19 @@
     }
 
     function renderDetailView() {
-      const s = stocks.find(x => x.code === selectedStockCode);
+      const s = stocks.find(x => String(x.code) === String(selectedStockCode));
       if (!s) return;
 
       document.getElementById('detailStockName').textContent = s.name;
       document.getElementById('detailStockCode').textContent = s.code;
-      document.getElementById('detailPrice').textContent = `${s.price.toLocaleString()}원`;
+      document.getElementById('detailPrice').textContent = `${Number(s.price).toLocaleString()}원`;
 
       const isUp = s.change > 0, isDown = s.change < 0;
       const sign = isUp ? '+' : '';
       const colorClass = isUp ? 'price-up' : (isDown ? 'price-down' : 'text-slate-400');
 
       const detailDiff = document.getElementById('detailDiff');
-      detailDiff.textContent = `${sign}${s.change.toLocaleString()} (${sign}${s.rate.toFixed(2)}%)`;
+      detailDiff.textContent = `${sign}${Number(s.change).toLocaleString()} (${sign}${Number(s.rate).toFixed(2)}%)`;
       detailDiff.className = `text-xs font-bold font-mono ${colorClass}`;
 
       const limitBadge = document.getElementById('limitBadge');
@@ -1671,10 +1786,10 @@
         limitBadge.className = 'hidden';
       }
 
-      document.getElementById('detailUpperLimit').textContent = `${Math.floor(s.basePrice * 1.30).toLocaleString()}원`;
-      document.getElementById('detailBasePrice').textContent = `${s.basePrice.toLocaleString()}원`;
-      document.getElementById('detailLowerLimit').textContent = `${Math.ceil(s.basePrice * 0.70).toLocaleString()}원`;
-      document.getElementById('orderUnitPriceDisplay').textContent = `${s.price.toLocaleString()}원`;
+      document.getElementById('detailUpperLimit').textContent = `${Math.floor(Number(s.basePrice) * 1.30).toLocaleString()}원`;
+      document.getElementById('detailBasePrice').textContent = `${Number(s.basePrice).toLocaleString()}원`;
+      document.getElementById('detailLowerLimit').textContent = `${Math.ceil(Number(s.basePrice) * 0.70).toLocaleString()}원`;
+      document.getElementById('orderUnitPriceDisplay').textContent = `${Number(s.price).toLocaleString()}원`;
 
       updateChart(s);
     }
@@ -1682,15 +1797,16 @@
     function updateChart(stock) {
       const canvasEl = document.getElementById('stockHistoryChart');
       const ctx = canvasEl.getContext('2d');
-      const labels = stock.history.map((_, i) => `${i + 1}일`);
-      const isUp = stock.price >= stock.history[0];
+      const hist = Array.isArray(stock.history) ? stock.history : [stock.price];
+      const labels = hist.map((_, i) => `${i + 1}일`);
+      const isUp = Number(stock.price) >= Number(hist[0]);
       const borderColor = isUp ? '#f43f5e' : '#3b82f6';
       const bgColor = isUp ? 'rgba(244, 63, 94, 0.1)' : 'rgba(59, 130, 246, 0.1)';
 
       if (chartInstance) {
         chartInstance.data.labels = labels;
         chartInstance.data.datasets[0].label = stock.name;
-        chartInstance.data.datasets[0].data = stock.history;
+        chartInstance.data.datasets[0].data = hist;
         chartInstance.data.datasets[0].borderColor = borderColor;
         chartInstance.data.datasets[0].backgroundColor = bgColor;
         chartInstance.update('none');
@@ -1702,7 +1818,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: stock.name, data: stock.history, borderColor: borderColor, backgroundColor: bgColor,
+            label: stock.name, data: hist, borderColor: borderColor, backgroundColor: bgColor,
             borderWidth: 2.5, fill: true, tension: 0.25, pointRadius: 3
           }]
         },
@@ -1735,32 +1851,35 @@
     }
 
     function setQtyPercentage(percent) {
-      const s = stocks.find(x => x.code === selectedStockCode);
+      ensureActiveAccountAndStock();
+      const s = stocks.find(x => String(x.code) === String(selectedStockCode));
       if (!s) return;
       const input = document.getElementById('orderQtyInput');
       const sData = students[currentStudentName] || { cash: 0, holdings: {} };
       if (currentOrderType === 'buy') {
-        input.value = Math.max(1, Math.floor(Math.floor(sData.cash / s.price) * percent));
+        const maxBuy = Math.floor(Number(sData.cash) / Number(s.price));
+        input.value = Math.max(1, Math.floor(maxBuy * percent));
       } else {
-        const holding = (sData.holdings && sData.holdings[s.code]) ? sData.holdings[s.code].qty : 0;
+        const holding = (sData.holdings && sData.holdings[s.code]) ? Number(sData.holdings[s.code].qty) : 0;
         input.value = Math.max(1, Math.floor(holding * percent));
       }
       updateOrderCalculation();
     }
 
     function updateOrderCalculation() {
-      const s = stocks.find(x => x.code === selectedStockCode);
+      ensureActiveAccountAndStock();
+      const s = stocks.find(x => String(x.code) === String(selectedStockCode));
       if (!s) return;
       const qty = Math.max(1, parseInt(document.getElementById('orderQtyInput').value) || 1);
-      document.getElementById('orderTotalPriceDisplay').textContent = `${(qty * s.price).toLocaleString()}원`;
+      document.getElementById('orderTotalPriceDisplay').textContent = `${(qty * Number(s.price)).toLocaleString()}원`;
 
       const maxAffordableDisplay = document.getElementById('maxAffordableDisplay');
       const sData = students[currentStudentName] || { cash: 0, holdings: {} };
 
       if (currentOrderType === 'buy') {
-        maxAffordableDisplay.textContent = `매수 가능: ${Math.floor(sData.cash / s.price).toLocaleString()}주`;
+        maxAffordableDisplay.textContent = `매수 가능: ${Math.floor(Number(sData.cash) / Number(s.price)).toLocaleString()}주`;
       } else {
-        const holdingQty = (sData.holdings && sData.holdings[s.code]) ? sData.holdings[s.code].qty : 0;
+        const holdingQty = (sData.holdings && sData.holdings[s.code]) ? Number(sData.holdings[s.code].qty) : 0;
         maxAffordableDisplay.textContent = `보유 수량: ${holdingQty.toLocaleString()}주`;
       }
 
@@ -1793,7 +1912,7 @@
       document.getElementById('limitNewsItemsContainer').innerHTML = limitList.map(item => `
         <div class="bg-slate-900/90 rounded-2xl p-3.5 border border-slate-800 space-y-1.5 text-xs">
           <div class="flex items-center justify-between">
-            <span class="font-extrabold text-sm text-slate-100">${item.stock.name} (${item.stock.price.toLocaleString()}원)</span>
+            <span class="font-extrabold text-sm text-slate-100">${item.stock.name} (${Number(item.stock.price).toLocaleString()}원)</span>
             <span class="text-[10px] font-black px-2 py-0.5 rounded border ${item.type === 'UP' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-blue-500/20 text-blue-300 border-blue-500/40'}">${item.type === 'UP' ? '🔥 상한가 (+30%)' : '🧊 하한가 (-30%)'}</span>
           </div>
           <p class="text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-xl">📰 <strong>[특보]</strong> ${item.news}</p>
@@ -1816,19 +1935,19 @@
       document.getElementById('bestListContainer').innerHTML = sortedStocks.slice(0, 3).map((s, idx) => `
         <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950/60 text-xs">
           <span class="truncate"><strong class="text-rose-400 mr-1">${idx + 1}위</strong>${s.name}</span>
-          <span class="font-bold text-rose-400 font-mono">+${s.rate.toFixed(2)}%</span>
+          <span class="font-bold text-rose-400 font-mono">+${Number(s.rate).toFixed(2)}%</span>
         </div>
       `).join('');
       document.getElementById('worstListContainer').innerHTML = sortedStocks.slice(-3).reverse().map((s, idx) => `
         <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950/60 text-xs">
           <span class="truncate"><strong class="text-blue-400 mr-1">${idx + 1}위</strong>${s.name}</span>
-          <span class="font-bold text-blue-400 font-mono">${s.rate.toFixed(2)}%</span>
+          <span class="font-bold text-blue-400 font-mono">${Number(s.rate).toFixed(2)}%</span>
         </div>
       `).join('');
 
       document.getElementById('summaryStudentName').textContent = currentStudentName;
       const curStats = getStudentStats(currentStudentName);
-      const prevAsset = prevTurnStudentAssets[currentStudentName] !== undefined ? prevTurnStudentAssets[currentStudentName] : curStats.totalAsset;
+      const prevAsset = prevTurnStudentAssets[currentStudentName] !== undefined ? Number(prevTurnStudentAssets[currentStudentName]) : curStats.totalAsset;
       const dayDiff = curStats.totalAsset - prevAsset;
       const dayDiffRate = prevAsset === 0 ? 0 : (dayDiff / prevAsset) * 100;
       const sign = dayDiff >= 0 ? '+' : '';
@@ -1855,7 +1974,7 @@
     function undoLastTurn() {
       if (!isTeacherMode) return;
       const snapshot = localStorage.getItem(getSnapshotKeyForRoom(currentRoomId));
-      if (!snapshot || !confirm('직전 턴 상태로 되돌리시겠습니까?')) return;
+      if (!snapshot) return;
       const data = JSON.parse(snapshot);
       roomCustomTitle = data.roomCustomTitle || ""; roomTeacherPin = data.roomTeacherPin || "10101";
       marketDay = data.marketDay; seedMoney = data.seedMoney; stocks = data.stocks; students = data.students;
@@ -1865,6 +1984,7 @@
       updateUndoButtonState();
       pushFullStateToCloud();
       renderAll();
+      showOrderToast(`↩️ ${marketDay}일차 상태로 되돌렸습니다.`, "sell");
     }
     function updateUndoButtonState() {
       const btn = document.getElementById('undoTurnBtn');
@@ -1891,17 +2011,18 @@
       reader.onload = function(e) {
         try {
           const data = JSON.parse(e.target.result);
-          if (confirm(`'${file.name}' 백업을 현재 반(${ROOM_LABELS[currentRoomId]})에 복원하시겠습니까?`)) {
-            roomCustomTitle = data.roomCustomTitle || ""; roomTeacherPin = data.roomTeacherPin || "10101";
-            marketDay = data.marketDay || 1; seedMoney = data.seedMoney || 10000000;
-            stocks = data.stocks; students = data.students;
-            economyPhase = data.economyPhase || 3;
-            prevTurnStudentAssets = data.prevTurnStudentAssets || {};
-            prevTurnStudentRanks = data.prevTurnStudentRanks || {};
-            pushFullStateToCloud();
-            renderAll();
-          }
-        } catch (err) { alert('파일 오류: ' + err.message); }
+          roomCustomTitle = data.roomCustomTitle || ""; roomTeacherPin = data.roomTeacherPin || "10101";
+          marketDay = data.marketDay || 1; seedMoney = data.seedMoney || 10000000;
+          stocks = data.stocks; students = data.students;
+          economyPhase = data.economyPhase || 3;
+          prevTurnStudentAssets = data.prevTurnStudentAssets || {};
+          prevTurnStudentRanks = data.prevTurnStudentRanks || {};
+          pushFullStateToCloud();
+          renderAll();
+          showOrderToast("✅ 백업 파일이 성공적으로 복원되었습니다!", "success");
+        } catch (err) {
+          showOrderToast("❌ 파일 오류: " + err.message, "error");
+        }
       };
       reader.readAsText(file);
       event.target.value = '';
@@ -1962,7 +2083,10 @@
 
     function saveClassSetup() {
       const rawEntries = document.getElementById('setupStudentsInput').value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
-      if (rawEntries.length < 2) { alert('최소 2명 이상 입력해주세요.'); return; }
+      if (rawEntries.length < 2) {
+        showOrderToast("⚠️ 최소 2명 이상의 학생을 입력해주세요!", "error");
+        return;
+      }
 
       roomCustomTitle = document.getElementById('setupRoomCustomTitleInput').value.trim();
       roomTeacherPin = document.getElementById('setupRoomTeacherPinInput').value.trim() || "10101";
@@ -2002,11 +2126,11 @@
       renderAll();
       renderStudentLoginGrid();
       closeClassSetupModal();
-      alert(`[${ROOM_LABELS[currentRoomId]}] 설정 및 학생 비밀번호가 저장되었습니다!`);
+      showOrderToast(`✅ [${ROOM_LABELS[currentRoomId]}] 설정 및 비밀번호가 클라우드에 배포되었습니다!`, "success");
     }
 
     function resetAllGameData() {
-      if (!confirm(`정말로 [${ROOM_LABELS[currentRoomId]}]의 모든 자산과 턴을 1일차로 초기화하시겠습니까?\n(다른 반 데이터에는 영향을 주지 않습니다)`)) return;
+      if (!confirm(`정말로 [${ROOM_LABELS[currentRoomId]}]의 모든 자산과 턴을 1일차로 초기화하시겠습니까?`)) return;
       localStorage.removeItem(getLocalKeyForRoom(currentRoomId));
       localStorage.removeItem(getSnapshotKeyForRoom(currentRoomId));
       setupDefaults();
@@ -2014,6 +2138,7 @@
       renderAll();
       renderStudentLoginGrid();
       closeClassSetupModal();
+      showOrderToast(`🔄 [${ROOM_LABELS[currentRoomId]}] 데이터가 1일차로 초기화되었습니다.`, "sell");
     }
 
     window.addEventListener('load', () => {
