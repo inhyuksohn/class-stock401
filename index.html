@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>학급 모의투자 거래소 - KOSDAQ 클래스 (실시간 클라우드)</title>
+  <title>학급 모의투자 거래소 - KOSDAQ 클래스 (멀티 클래스 서버)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
@@ -25,7 +25,7 @@
     .price-up { color: #f43f5e; }
     .price-down { color: #3b82f6; }
     .glass-panel {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
@@ -33,28 +33,41 @@
 </head>
 <body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden flex flex-col">
 
-  <!-- ================= 학생 입장(로그인 & 개인 비밀번호 입력) 오버레이 모달 ================= -->
+  <!-- ================= 학생 입장(반 선택 & 로그인) 오버레이 모달 ================= -->
   <div id="studentLoginOverlay" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="glass-panel w-full max-w-lg p-6 rounded-3xl border border-slate-700 shadow-2xl flex flex-col gap-4">
+      
+      <!-- 헤더 -->
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 flex items-center justify-center shadow-lg">
             <i class="fa-solid fa-chart-line text-white text-lg"></i>
           </div>
           <div>
-            <h2 class="text-base sm:text-lg font-black text-white">KOSDAQ 클래스 실시간 거래소</h2>
-            <p class="text-[11px] text-slate-400">본인의 이름을 클릭하고 개인 비밀번호를 입력하세요!</p>
+            <h2 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+              <span id="loginRoomTitleDisplay">1반 거래소</span>
+            </h2>
+            <p class="text-[11px] text-slate-400">우리 반을 확인하고 본인 이름을 클릭해 로그인하세요!</p>
           </div>
         </div>
         <span id="loginCloudBadge" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-bold text-[10px]">연결 확인 중...</span>
       </div>
 
+      <!-- ★ 학급(채널 1~5반) 선택 탭 ★ -->
+      <div class="bg-slate-900 p-1.5 rounded-2xl border border-slate-800 flex items-center justify-between gap-1">
+        <button onclick="switchClassRoom('class_1')" id="loginRoomBtn_class_1" class="flex-1 py-2 rounded-xl font-black text-xs transition-all cursor-pointer bg-indigo-600 text-white shadow">1반</button>
+        <button onclick="switchClassRoom('class_2')" id="loginRoomBtn_class_2" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">2반</button>
+        <button onclick="switchClassRoom('class_3')" id="loginRoomBtn_class_3" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">3반</button>
+        <button onclick="switchClassRoom('class_4')" id="loginRoomBtn_class_4" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">4반</button>
+        <button onclick="switchClassRoom('class_5')" id="loginRoomBtn_class_5" class="flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white">5반</button>
+      </div>
+
       <!-- STEP 1: 학생 이름 선택 그리드 -->
-      <div id="loginStudentGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-64 overflow-y-auto p-1">
+      <div id="loginStudentGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-60 overflow-y-auto p-1">
         <!-- JS 동적 생성 -->
       </div>
 
-      <!-- STEP 2: 선택한 학생 비밀번호 입력 박스 (이름 클릭 시 전환) -->
+      <!-- STEP 2: 선택한 학생 비밀번호 입력 박스 -->
       <div id="studentPinPromptBox" class="hidden flex-col items-center justify-center bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-5 space-y-3.5">
         <div class="w-11 h-11 rounded-2xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-lg">
           <i class="fa-solid fa-user-lock"></i>
@@ -71,17 +84,17 @@
         </div>
       </div>
 
-      <!-- 하단 교사 접속 버튼 (교사 PIN 번호 노출 완전 제거!) -->
+      <!-- 하단 교사 접속 버튼 -->
       <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
         <button onclick="openTeacherAuthModal()" class="text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer">
           <i class="fa-solid fa-user-shield"></i> 선생님(교사 모드)으로 접속하기
         </button>
-        <span class="text-[11px] text-slate-500">개인 계좌 보호 시스템 적용</span>
+        <span class="text-[11px] text-slate-500">다학급 독립 서버 지원</span>
       </div>
     </div>
   </div>
 
-  <!-- ================= 교사 모드 비밀번호 & 클라우드 DB 주소 설정 모달 ================= -->
+  <!-- ================= 교사 모드 비밀번호 모달 ================= -->
   <div id="teacherAuthModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-md p-5 rounded-2xl shadow-2xl space-y-4 text-xs">
       <div class="flex items-center gap-2.5 border-b border-slate-800 pb-3">
@@ -89,8 +102,8 @@
           <i class="fa-solid fa-chalkboard-user"></i>
         </div>
         <div>
-          <h3 class="font-black text-sm text-white">교사 관리자 모드 접속</h3>
-          <p class="text-[11px] text-slate-400">선생님 전용 관리자 비밀번호를 입력하세요.</p>
+          <h3 class="font-black text-sm text-white"><span id="authModalRoomName" class="text-amber-300">1반</span> 교사 관리자 모드 접속</h3>
+          <p class="text-[11px] text-slate-400">해당 학급의 교사 전용 비밀번호를 입력하세요.</p>
         </div>
       </div>
 
@@ -127,13 +140,20 @@
       <div>
         <div class="flex items-center gap-2">
           <h1 class="font-black text-sm md:text-base leading-none bg-gradient-to-r from-amber-300 via-rose-400 to-indigo-400 bg-clip-text text-transparent">KOSDAQ 클래스</h1>
-          <!-- 실시간 클라우드 연결 상태 뱃지 -->
-          <span id="cloudStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold flex items-center gap-1">
+          <!-- 학급(채널) 선택 드롭다운 -->
+          <select id="headerRoomSelect" onchange="switchClassRoom(this.value)" class="bg-indigo-950 border border-indigo-500/50 text-indigo-300 font-black text-[11px] px-2 py-0.5 rounded-lg outline-none cursor-pointer">
+            <option value="class_1">1반 서버</option>
+            <option value="class_2">2반 서버</option>
+            <option value="class_3">3반 서버</option>
+            <option value="class_4">4반 서버</option>
+            <option value="class_5">5반 서버</option>
+          </select>
+          <span id="cloudStatusBadge" class="hidden sm:flex text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-slate-500" id="cloudStatusDot"></span>
             <span id="cloudStatusText">연결 중...</span>
           </span>
         </div>
-        <span class="text-[10px] text-slate-400">실시간 다자간 학급 모의투자</span>
+        <span id="headerClassCustomTitle" class="text-[10px] text-slate-400">실시간 다자간 학급 모의투자</span>
       </div>
     </div>
 
@@ -150,18 +170,18 @@
 
       <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs">
         <i class="fa-solid fa-user-check text-emerald-400"></i>
-        <select id="studentSelect" onchange="onStudentChange(this.value)" class="bg-transparent font-black text-slate-100 outline-none cursor-pointer max-w-[110px] sm:max-w-[140px] truncate">
+        <select id="studentSelect" onchange="onStudentChange(this.value)" class="bg-transparent font-black text-slate-100 outline-none cursor-pointer max-w-[100px] sm:max-w-[130px] truncate">
         </select>
         <button onclick="openStudentLoginOverlay()" class="text-[10px] text-indigo-400 hover:underline ml-1 font-bold cursor-pointer" title="비밀번호 입력 후 다른 학생 계좌로 전환">계좌변경</button>
       </div>
 
-      <div class="hidden sm:flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs font-mono">
+      <div class="hidden lg:flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs font-mono">
         <span class="text-slate-400">진행:</span>
         <span id="turnDisplay" class="font-extrabold text-amber-300">1일차</span>
       </div>
     </div>
 
-    <!-- 우측 컨트롤: 설명서 + 교사 모드 스위치 + (교사 전용 컨트롤 버튼들) -->
+    <!-- 우측 컨트롤 -->
     <div class="flex items-center gap-1.5 md:gap-2">
       <button onclick="openTutorialModal()" class="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold border border-amber-500/40 flex items-center gap-1 cursor-pointer">
         <i class="fa-solid fa-book-open"></i><span class="hidden sm:inline">설명서</span>
@@ -173,15 +193,19 @@
 
       <!-- 교사 모드일 때만 표시됨 -->
       <div id="teacherActionGroup" class="hidden items-center gap-1.5">
-        <button id="undoTurnBtn" onclick="undoLastTurn()" disabled class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold border border-slate-700/60 flex items-center gap-1 transition-all cursor-not-allowed" title="직전 턴으로 되돌리기">
-          <i class="fa-solid fa-rotate-left"></i><span class="hidden lg:inline">되돌리기</span>
+        <button onclick="copyRoomShareLink()" class="px-2.5 py-1.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-xs font-bold border border-emerald-700 flex items-center gap-1 cursor-pointer" title="현재 반 전용 접속 링크 복사">
+          <i class="fa-solid fa-link"></i><span class="hidden xl:inline">반 링크복사</span>
         </button>
 
-        <button onclick="exportBackupFile()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="백업 저장">
+        <button id="undoTurnBtn" onclick="undoLastTurn()" disabled class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold border border-slate-700/60 flex items-center gap-1 transition-all cursor-not-allowed" title="직전 턴으로 되돌리기">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+
+        <button onclick="exportBackupFile()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="우리 반 백업 저장">
           <i class="fa-solid fa-download text-emerald-400"></i>
         </button>
 
-        <button onclick="document.getElementById('backupFileInput').click()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="백업 불러오기">
+        <button onclick="document.getElementById('backupFileInput').click()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer" title="우리 반 백업 불러오기">
           <i class="fa-solid fa-upload text-blue-400"></i>
         </button>
         <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="importBackupFile(event)">
@@ -197,10 +221,10 @@
     </div>
   </header>
 
-  <!-- ================= 교사용 거시경제 상황 컨트롤 바 (교사 모드에서만 노출) ================= -->
+  <!-- ================= 교사용 거시경제 상황 컨트롤 바 ================= -->
   <div id="teacherMacroBar" class="hidden bg-slate-900/95 border-b border-amber-500/30 px-4 py-2 flex-wrap items-center justify-between gap-2.5 z-10 flex-shrink-0">
     <div class="flex items-center gap-2">
-      <span class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">교사 전용 컨트롤</span>
+      <span id="macroRoomBadge" class="px-2 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px]">1반 교사 컨트롤</span>
       <span class="text-xs font-bold text-slate-200">다음 날 거시경제 국면:</span>
       <span id="economyStateDescription" class="text-xs font-extrabold text-amber-300">3단계: 보통 (랜덤 시장)</span>
     </div>
@@ -242,6 +266,7 @@
       <section class="flex-1 h-full flex flex-col bg-slate-950 overflow-y-auto">
         <div class="p-3 bg-indigo-950/30 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">1반</span>
             <span class="font-extrabold text-indigo-300 text-sm" id="hudStudentName">-</span>
             <span class="text-slate-500">님의 실시간 계좌</span>
           </div>
@@ -273,14 +298,12 @@
           </div>
         </div>
 
-        <!-- 차트 영역 (고정 높이 및 오버플로우 방지로 하단 테이블과 절대 겹치지 않음) -->
         <div class="p-4 flex-shrink-0 flex flex-col h-[280px] md:h-[320px] relative z-0 overflow-hidden">
           <div class="w-full h-full relative bg-slate-900/40 rounded-xl border border-slate-800/80 p-2 overflow-hidden">
             <canvas id="stockHistoryChart"></canvas>
           </div>
         </div>
 
-        <!-- 포트폴리오 & 주주 명부 테이블 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 border-t border-slate-800 bg-slate-950 relative z-10 flex-shrink-0">
           <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
             <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center justify-between">
@@ -400,7 +423,7 @@
       </aside>
     </div>
 
-    <!-- 2. 학급 랭킹 전광판 뷰 (전일 대비 순위 등락 표시 포함) -->
+    <!-- 2. 학급 랭킹 전광판 뷰 -->
     <div id="rankingView" class="hidden w-full h-full p-4 md:p-6 overflow-y-auto bg-slate-950 flex flex-col">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2.5">
@@ -408,8 +431,8 @@
             <i class="fa-solid fa-trophy"></i>
           </div>
           <div>
-            <h2 class="text-base font-black text-slate-100">학급 투자 실시간 랭킹 전광판</h2>
-            <p class="text-[11px] text-slate-400">학생들이 주문을 넣거나 주가가 변동되면 실시간으로 순위와 등락 계단이 갱신됩니다.</p>
+            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">1반</span> 실시간 랭킹 전광판</h2>
+            <p class="text-[11px] text-slate-400">우리 반 학생들의 투자 수익률과 전일 대비 순위 등락이 실시간으로 반영됩니다.</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -440,16 +463,18 @@
 
   </div>
 
-  <!-- ================= 모달 0: 설명서 모달 (교사 비밀번호 언급 완전 삭제!) ================= -->
+  <!-- ================= 모달 0: 설명서 모달 ================= -->
   <div id="tutorialModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs p-5 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-extrabold text-base text-amber-300"><i class="fa-solid fa-book-open mr-1.5"></i>KOSDAQ 클래스 실시간 거래소 이용 안내</h3>
+        <h3 class="font-extrabold text-base text-amber-300"><i class="fa-solid fa-book-open mr-1.5"></i>KOSDAQ 클래스 다학급 거래소 이용 안내</h3>
         <button onclick="closeTutorialModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-slate-300 leading-relaxed">
-        <p>• <strong>학생 이용법</strong>: 처음 입장할 때 본인 이름을 선택하고 선생님께 부여받은 <strong>개인 비밀번호</strong>를 입력해 로그인하세요. 원하는 종목을 골라 우측 패널에서 직접 <strong>[매수]</strong> 또는 <strong>[매도]</strong> 주문을 전송하면 학급 전체 주주 명부와 랭킹에 즉시 반영됩니다.</p>
-        <p>• <strong>선생님(교사 모드)</strong>: 우측 상단 <strong>[교사 모드]</strong> 버튼을 통해 로그인하면 학생별 비밀번호 설정, 거시경제 국면(1~5단계) 조절, 종목 추세 설정, 그리고 <strong>[하루 마감]</strong> 기능을 사용할 수 있습니다.</p>
+        <p>• <strong>반별 독립 채널 (1반~5반)</strong>: 상단에서 본인 학급(1반~5반)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
+        <p>• <strong>반 전용 링크 공유</strong>: 교사 모드 활성화 후 상단 <strong>[🔗 반 링크복사]</strong> 버튼을 누르면 해당 반으로 바로 접속되는 전용 주소(예: <code>?room=2</code>)가 복사됩니다.</p>
+        <p>• <strong>학생 이용법</strong>: 본인 학급과 이름을 선택하고 선생님께 안내받은 <strong>개인 비밀번호</strong>를 입력해 로그인하세요.</p>
+        <p>• <strong>선생님(교사 모드)</strong>: 우측 상단 <strong>[교사 모드]</strong> 버튼을 통해 로그인하면 우리 반 학생 명단/비밀번호 설정, 교사 비밀번호 변경, 거시경제 국면(1~5단계) 조절 및 <strong>[하루 마감]</strong> 기능을 사용할 수 있습니다.</p>
       </div>
       <div class="flex justify-end pt-2">
         <button onclick="closeTutorialModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl cursor-pointer">닫기</button>
@@ -518,26 +543,40 @@
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-chalkboard-user text-amber-400 text-sm"></i>
-          <h3 class="font-extrabold text-sm text-slate-100">학급 명단 · 학생별 비밀번호(PIN) · 종목 설정</h3>
+          <h3 class="font-extrabold text-sm text-slate-100"><span id="setupModalRoomBadge" class="text-amber-300">1반</span> 환경 설정 (다른 반과 독립 저장)</h3>
         </div>
         <button onclick="closeClassSetupModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
       <div class="p-4 flex-1 overflow-y-auto space-y-5">
-        <!-- 💡 학생 명단 및 개인 비밀번호(PIN) 설정 섹션 -->
+        <!-- 학급 이름 및 반 전용 교사 비밀번호 설정 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+          <div>
+            <label class="font-bold text-slate-200 block mb-1"><i class="fa-solid fa-tag text-amber-400 mr-1"></i>학급 표시 이름 (별칭)</label>
+            <input type="text" id="setupRoomCustomTitleInput" placeholder="예: 6학년 1반 (손인혁 선생님)"
+              class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 font-bold outline-none focus:border-indigo-500 select-text">
+          </div>
+          <div>
+            <label class="font-bold text-slate-200 block mb-1"><i class="fa-solid fa-key text-rose-400 mr-1"></i>우리 반 전용 교사 비밀번호</label>
+            <input type="text" id="setupRoomTeacherPinInput" placeholder="기본값: 10101"
+              class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-amber-300 font-mono font-bold outline-none focus:border-indigo-500 select-text">
+          </div>
+        </div>
+
+        <!-- 학생 명단 및 개인 비밀번호(PIN) 설정 섹션 -->
         <div class="space-y-2 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <label class="font-bold text-slate-200 flex items-center gap-1.5">
-              <i class="fa-solid fa-user-lock text-indigo-400"></i>학생 명단 및 개인 비밀번호 설정
+              <i class="fa-solid fa-user-lock text-indigo-400"></i>우리 반 학생 명단 및 개인 비밀번호 설정
             </label>
             <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
-              <button onclick="autoAssignPins('seq')" class="px-2 py-1 rounded bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 font-bold cursor-pointer" title="1001, 1002, 1003... 순서대로 부여">번호순 비번(1001~)</button>
-              <button onclick="autoAssignPins('random')" class="px-2 py-1 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 font-bold cursor-pointer" title="무작위 4자리 숫자 부여">랜덤 4자리 부여</button>
-              <button onclick="autoAssignPins('1234')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer" title="모두 1234로 통일">전원 1234 통일</button>
+              <button onclick="autoAssignPins('seq')" class="px-2 py-1 rounded bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 font-bold cursor-pointer">번호순 비번(1001~)</button>
+              <button onclick="autoAssignPins('random')" class="px-2 py-1 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 font-bold cursor-pointer">랜덤 4자리 부여</button>
+              <button onclick="autoAssignPins('1234')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">전원 1234 통일</button>
             </div>
           </div>
           <p class="text-[11px] text-slate-400">
-            <code class="text-amber-300 font-bold">이름:비밀번호</code> 형식으로 입력하며 쉼표(,)로 구분합니다. (비밀번호를 생략하고 이름만 적으면 기본값 <code class="text-emerald-400">1234</code>로 설정됩니다)
+            <code class="text-amber-300 font-bold">이름:비밀번호</code> 형식으로 입력하며 쉼표(,)로 구분합니다. (비밀번호 생략 시 기본값 <code class="text-emerald-400">1234</code>)
           </p>
           <textarea id="setupStudentsInput" rows="4" placeholder="강채원:1001, 김라이:1002, 김성원:1003..."
             class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 font-mono select-text leading-relaxed"></textarea>
@@ -554,7 +593,7 @@
         <div class="space-y-2 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
           <div class="flex items-center justify-between">
             <div>
-              <label class="font-bold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-building text-amber-400"></i>거래소 20개 종목 및 비밀 추세 조작</label>
+              <label class="font-bold text-slate-200 flex items-center gap-1.5"><i class="fa-solid fa-building text-amber-400"></i>우리 반 거래소 20개 종목 및 비밀 추세 조작</label>
             </div>
             <button onclick="restoreDefaultStockNames()" class="text-rose-400 hover:underline text-[11px] cursor-pointer">종목 기본값 복원</button>
           </div>
@@ -564,11 +603,11 @@
 
       <div class="p-4 border-t border-slate-800 flex items-center justify-between bg-slate-900/90">
         <button onclick="resetAllGameData()" class="px-3 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 font-bold border border-rose-800 cursor-pointer">
-          <i class="fa-solid fa-triangle-exclamation mr-1"></i>전체 수업 데이터 1일차 초기화
+          <i class="fa-solid fa-triangle-exclamation mr-1"></i>현재 반 데이터만 1일차 초기화
         </button>
         <div class="flex items-center gap-2">
           <button onclick="closeClassSetupModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">닫기</button>
-          <button onclick="saveClassSetup()" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-black shadow-md cursor-pointer">설정 저장 및 클라우드 배포</button>
+          <button onclick="saveClassSetup()" class="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-black shadow-md cursor-pointer">우리 반 설정 저장 및 배포</button>
         </div>
       </div>
     </div>
@@ -580,10 +619,16 @@
        ========================================================================== */
     const DEFAULT_FIREBASE_DB_URL = "https://class-stock401-default-rtdb.firebaseio.com/"; 
 
-    const STORAGE_KEY_CLASS_DATA = 'class_stock_game_v6_cloud';
-    const STORAGE_KEY_BACKUP_SNAPSHOT = 'class_stock_snapshot_undo_v6';
     const STORAGE_KEY_FIREBASE_URL = 'class_stock_firebase_url_v1';
-    const STORAGE_KEY_MY_STUDENT_NAME = 'class_stock_my_student_name';
+    const STORAGE_KEY_CURRENT_ROOM = 'class_stock_selected_room_v1';
+
+    const ROOM_LABELS = {
+      class_1: "1반",
+      class_2: "2반",
+      class_3: "3반",
+      class_4: "4반",
+      class_5: "5반"
+    };
 
     const DEFAULT_STOCKS = [
       { code: "005930", name: "삼전전자", price: 72000, trend: "up" },
@@ -632,14 +677,18 @@
     ];
 
     /* ==========================================================================
-       2. 전역 상태 변수 & 클라우드(Firebase) 연동 객체
+       2. 전역 상태 변수 & 멀티 학급(class_1 ~ class_5) 관리
        ========================================================================== */
+    let currentRoomId = "class_1"; // 'class_1' ~ 'class_5'
+    let roomCustomTitle = "";
+    let roomTeacherPin = "10101";
+
     let marketDay = 1;
     let seedMoney = 10000000;
     let stocks = [];
-    let students = {}; // { name: { cash, pin: "1234", holdings: {} } }
+    let students = {};
     let currentStudentName = "";
-    let pendingPinStudentName = ""; // 로그인 시 비밀번호 입력 대기 중인 학생 이름
+    let pendingPinStudentName = "";
     let selectedStockCode = null;
     let currentOrderType = 'buy';
     let chartInstance = null;
@@ -649,6 +698,7 @@
 
     let isTeacherMode = false;
     let firebaseDb = null;
+    let currentRoomRef = null;
     let isCloudConnected = false;
 
     const ECON_CONFIGS = {
@@ -659,9 +709,91 @@
       5: { label: "5단계: 경제 대호황 (불장 🚀)", color: "text-rose-500", bias: 0.16, volatility: 0.08, extremeChance: 0.12, extremeType: 'upper' }
     };
 
+    function getLocalKeyForRoom(roomId) {
+      return `class_stock_game_v7_${roomId}`;
+    }
+    function getSnapshotKeyForRoom(roomId) {
+      return `class_stock_undo_v7_${roomId}`;
+    }
+    function getMyNameKeyForRoom(roomId) {
+      return `class_stock_my_name_${roomId}`;
+    }
+
+    // Firebase 경로 구하기: 1반은 기존 데이터 유지를 위해 'kosdaq_class_room' 사용, 2~5반은 'kosdaq_multi_rooms/class_N' 사용!
+    function getFirebasePathForRoom(roomId) {
+      if (roomId === 'class_1') return 'kosdaq_class_room';
+      return `kosdaq_multi_rooms/${roomId}`;
+    }
+
     /* ==========================================================================
-       3. 실시간 클라우드(Firebase) 초기화 및 양방향 동기화 엔진
+       3. 멀티 학급(1반 ~ 5반) 전환 및 Firebase 실시간 연동
        ========================================================================== */
+    function detectInitialRoom() {
+      const params = new URLSearchParams(window.location.search);
+      const roomParam = params.get('room');
+      if (roomParam) {
+        const num = roomParam.replace(/[^1-5]/g, '');
+        if (num) {
+          const rId = `class_${num}`;
+          localStorage.setItem(STORAGE_KEY_CURRENT_ROOM, rId);
+          return rId;
+        }
+      }
+      return localStorage.getItem(STORAGE_KEY_CURRENT_ROOM) || 'class_1';
+    }
+
+    function switchClassRoom(roomId) {
+      if (!ROOM_LABELS[roomId]) return;
+      currentRoomId = roomId;
+      localStorage.setItem(STORAGE_KEY_CURRENT_ROOM, roomId);
+
+      // 반을 바꾸면 보안을 위해 교사 모드를 해제하고 해당 반 학생 로그인 대기 상태로 전환
+      isTeacherMode = false;
+      applyTeacherModeUI();
+      cancelStudentPinPrompt();
+      updateRoomSelectorUI();
+
+      // 해당 반 로컬 데이터 우선 로드 후 클라우드 구독 전환
+      loadRoomLocalData(roomId);
+      const fbUrl = getFirebaseUrl();
+      if (fbUrl) {
+        connectFirebaseCloud(fbUrl);
+      }
+    }
+
+    function updateRoomSelectorUI() {
+      const shortName = ROOM_LABELS[currentRoomId] || "1반";
+      const displayTitle = roomCustomTitle ? `${shortName} (${roomCustomTitle})` : `${shortName} 거래소`;
+
+      document.getElementById('headerRoomSelect').value = currentRoomId;
+      document.getElementById('loginRoomTitleDisplay').textContent = displayTitle;
+      document.getElementById('headerClassCustomTitle').textContent = roomCustomTitle || `${shortName} 실시간 모의투자`;
+      document.getElementById('hudRoomBadge').textContent = shortName;
+      document.getElementById('rankingRoomTitle').textContent = shortName;
+      document.getElementById('macroRoomBadge').textContent = `${shortName} 교사 컨트롤`;
+      document.getElementById('authModalRoomName').textContent = shortName;
+      document.getElementById('setupModalRoomBadge').textContent = shortName;
+
+      ['class_1', 'class_2', 'class_3', 'class_4', 'class_5'].forEach(rId => {
+        const btn = document.getElementById(`loginRoomBtn_${rId}`);
+        if (!btn) return;
+        if (rId === currentRoomId) {
+          btn.className = "flex-1 py-2 rounded-xl font-black text-xs transition-all cursor-pointer bg-indigo-600 text-white shadow";
+        } else {
+          btn.className = "flex-1 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer text-slate-400 hover:text-white";
+        }
+      });
+    }
+
+    function copyRoomShareLink() {
+      const roomNum = currentRoomId.replace('class_', '');
+      const baseUrl = window.location.origin + window.location.pathname;
+      const shareUrl = `${baseUrl}?room=${roomNum}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert(`🔗 [${ROOM_LABELS[currentRoomId]} 전용 접속 링크]가 복사되었습니다!\n\n${shareUrl}\n\n이 주소를 동료 선생님이나 학생들에게 공유하면 접속 즉시 ${ROOM_LABELS[currentRoomId]} 서버로 연결됩니다.`);
+      });
+    }
+
     function getFirebaseUrl() {
       const urlParam = new URLSearchParams(window.location.search).get('db');
       if (urlParam) {
@@ -683,7 +815,15 @@
         }
         firebaseDb = firebase.database();
 
-        firebaseDb.ref('kosdaq_class_room').on('value', (snapshot) => {
+        // 기존 반 리스너가 있으면 해제
+        if (currentRoomRef) {
+          currentRoomRef.off();
+        }
+
+        const path = getFirebasePathForRoom(currentRoomId);
+        currentRoomRef = firebaseDb.ref(path);
+
+        currentRoomRef.on('value', (snapshot) => {
           const cloudData = snapshot.val();
           updateCloudBadgeUI(true);
 
@@ -696,6 +836,8 @@
           marketDay = cloudData.marketDay || 1;
           seedMoney = cloudData.seedMoney || 10000000;
           economyPhase = cloudData.economyPhase || 3;
+          roomCustomTitle = cloudData.roomCustomTitle || "";
+          roomTeacherPin = cloudData.roomTeacherPin ? String(cloudData.roomTeacherPin) : "10101";
           prevTurnStudentAssets = cloudData.prevTurnStudentAssets || {};
           prevTurnStudentRanks = cloudData.prevTurnStudentRanks || {};
 
@@ -718,13 +860,14 @@
             students = restoredStudents;
           }
 
+          const savedMyName = localStorage.getItem(getMyNameKeyForRoom(currentRoomId));
           if (!currentStudentName || !students[currentStudentName]) {
-            const savedMyName = localStorage.getItem(STORAGE_KEY_MY_STUDENT_NAME);
             currentStudentName = (savedMyName && students[savedMyName]) ? savedMyName : Object.keys(students)[0];
           }
           if (!selectedStockCode && stocks.length > 0) selectedStockCode = stocks[0].code;
 
           saveLocalMirror();
+          updateRoomSelectorUI();
           updateEconomyPhaseUI();
           renderAll();
           renderStudentLoginGrid();
@@ -747,17 +890,17 @@
       const loginBadge = document.getElementById('loginCloudBadge');
 
       if (connected) {
-        badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 font-black flex items-center gap-1";
+        badge.className = "hidden sm:flex text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 font-black items-center gap-1";
         dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping";
-        txt.textContent = "실시간 클라우드 연동 중";
+        txt.textContent = "실시간 연동 중";
         if (loginBadge) {
           loginBadge.className = "px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-black text-[10px]";
-          loginBadge.textContent = "🟢 실시간 서버 연결됨";
+          loginBadge.textContent = `🟢 ${ROOM_LABELS[currentRoomId]} 서버 연결됨`;
         }
       } else {
-        badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold flex items-center gap-1";
+        badge.className = "hidden sm:flex text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-bold items-center gap-1";
         dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400";
-        txt.textContent = "단독(로컬) 모드";
+        txt.textContent = "로컬 모드";
         if (loginBadge) {
           loginBadge.className = "px-2.5 py-1 rounded-full bg-slate-800 text-amber-300 font-bold text-[10px]";
           loginBadge.textContent = "단독 실행 모드";
@@ -768,7 +911,10 @@
     function pushFullStateToCloud() {
       saveLocalMirror();
       if (isCloudConnected && firebaseDb) {
-        firebaseDb.ref('kosdaq_class_room').set({
+        const path = getFirebasePathForRoom(currentRoomId);
+        firebaseDb.ref(path).set({
+          roomCustomTitle,
+          roomTeacherPin,
           marketDay,
           seedMoney,
           stocks,
@@ -784,7 +930,8 @@
     function pushSingleStudentToCloud(studentName) {
       saveLocalMirror();
       if (isCloudConnected && firebaseDb && students[studentName]) {
-        firebaseDb.ref(`kosdaq_class_room/students/${studentName}`).set({
+        const path = getFirebasePathForRoom(currentRoomId);
+        firebaseDb.ref(`${path}/students/${studentName}`).set({
           cash: students[studentName].cash,
           pin: students[studentName].pin || "1234",
           holdings: students[studentName].holdings || {}
@@ -793,8 +940,8 @@
     }
 
     function saveLocalMirror() {
-      localStorage.setItem(STORAGE_KEY_CLASS_DATA, JSON.stringify({
-        marketDay, seedMoney, stocks, students, currentStudentName, economyPhase, prevTurnStudentAssets, prevTurnStudentRanks
+      localStorage.setItem(getLocalKeyForRoom(currentRoomId), JSON.stringify({
+        roomCustomTitle, roomTeacherPin, marketDay, seedMoney, stocks, students, currentStudentName, economyPhase, prevTurnStudentAssets, prevTurnStudentRanks
       }));
     }
 
@@ -813,14 +960,13 @@
       `).join('');
     }
 
-    // 학생 이름을 클릭하면 비밀번호 입력 창을 띄움 (교사 모드일 때는 즉시 진입)
     function promptStudentPin(name) {
       if (isTeacherMode) {
         selectMyStudentAccount(name);
         return;
       }
       pendingPinStudentName = name;
-      document.getElementById('pinTargetStudentName').textContent = name;
+      document.getElementById('pinTargetStudentName').textContent = `[${ROOM_LABELS[currentRoomId]}] ${name}`;
       document.getElementById('studentPinInput').value = "";
       document.getElementById('loginStudentGrid').classList.add('hidden');
       const pinBox = document.getElementById('studentPinPromptBox');
@@ -854,7 +1000,7 @@
 
     function selectMyStudentAccount(name) {
       currentStudentName = name;
-      localStorage.setItem(STORAGE_KEY_MY_STUDENT_NAME, name);
+      localStorage.setItem(getMyNameKeyForRoom(currentRoomId), name);
       document.getElementById('studentLoginOverlay').classList.add('hidden');
       renderAll();
     }
@@ -893,8 +1039,9 @@
       const pw = document.getElementById('teacherPwInput').value.trim();
       const dbUrl = document.getElementById('firebaseUrlInput').value.trim();
 
-      if (pw !== "10101") {
-        alert("관리자 비밀번호가 일치하지 않습니다!");
+      // 각 반의 전용 교사 비밀번호 또는 마스터 비밀번호(10101) 허용
+      if (pw !== String(roomTeacherPin || "10101") && pw !== "10101") {
+        alert("교사 관리자 비밀번호가 일치하지 않습니다!");
         return;
       }
 
@@ -939,11 +1086,13 @@
     /* ==========================================================================
        5. 초기 데이터 로드 및 턴 진행
        ========================================================================== */
-    function initClassData() {
-      const saved = localStorage.getItem(STORAGE_KEY_CLASS_DATA);
+    function loadRoomLocalData(roomId) {
+      const saved = localStorage.getItem(getLocalKeyForRoom(roomId));
       if (saved) {
         try {
           const data = JSON.parse(saved);
+          roomCustomTitle = data.roomCustomTitle || "";
+          roomTeacherPin = data.roomTeacherPin || "10101";
           marketDay = data.marketDay || 1;
           seedMoney = data.seedMoney || 10000000;
           stocks = data.stocks || [];
@@ -965,15 +1114,21 @@
       Object.values(students).forEach(st => { if (!st.pin) st.pin = "1234"; });
       if (!selectedStockCode && stocks.length > 0) selectedStockCode = stocks[0].code;
 
-      const savedMyName = localStorage.getItem(STORAGE_KEY_MY_STUDENT_NAME);
+      const savedMyName = localStorage.getItem(getMyNameKeyForRoom(roomId));
       if (savedMyName && students[savedMyName]) {
         currentStudentName = savedMyName;
       }
 
+      updateRoomSelectorUI();
       updateUndoButtonState();
       updateEconomyPhaseUI();
       renderAll();
       renderStudentLoginGrid();
+    }
+
+    function initClassData() {
+      currentRoomId = detectInitialRoom();
+      loadRoomLocalData(currentRoomId);
 
       const fbUrl = getFirebaseUrl();
       if (fbUrl) {
@@ -982,6 +1137,8 @@
     }
 
     function setupDefaults() {
+      roomCustomTitle = "";
+      roomTeacherPin = "10101";
       marketDay = 1;
       seedMoney = 10000000;
       economyPhase = 3;
@@ -1008,7 +1165,7 @@
 
     function setupDefaultStudents() {
       students = {};
-      DEFAULT_STUDENTS.forEach((name, idx) => {
+      DEFAULT_STUDENTS.forEach(name => {
         students[name] = {
           cash: seedMoney,
           pin: "1234",
@@ -1047,7 +1204,7 @@
     function nextMarketTurn() {
       if (!isTeacherMode) return;
       const econConfig = ECON_CONFIGS[economyPhase];
-      if (!confirm(`[${marketDay}일차 마감]\n현재 경제 국면: '${econConfig.label}'\n하루를 마감하고 전 학생 화면의 주가를 변동시키겠습니까?`)) return;
+      if (!confirm(`[${ROOM_LABELS[currentRoomId]} · ${marketDay}일차 마감]\n현재 경제 국면: '${econConfig.label}'\n하루를 마감하고 우리 반 주가를 변동시키겠습니까?`)) return;
 
       prevTurnStudentAssets = {};
       const currentRankedBeforeTurn = Object.keys(students).map(name => ({
@@ -1271,7 +1428,7 @@
         return;
       }
       currentStudentName = name;
-      localStorage.setItem(STORAGE_KEY_MY_STUDENT_NAME, name);
+      localStorage.setItem(getMyNameKeyForRoom(currentRoomId), name);
       renderStudentHUD();
       renderStudentPortfolio();
       renderStockHoldersList();
@@ -1407,7 +1564,6 @@
         }
 
         const isCurrent = item.name === currentStudentName;
-        // 교사 모드에서는 즉시 전환, 학생 모드에서는 비밀번호 인증 후 전환
         const actionBtn = isTeacherMode
           ? `<button onclick="switchToStudent('${item.name}')" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-bold transition-all cursor-pointer">교사 열람</button>`
           : (isCurrent
@@ -1439,7 +1595,7 @@
         return;
       }
       currentStudentName = name;
-      localStorage.setItem(STORAGE_KEY_MY_STUDENT_NAME, name);
+      localStorage.setItem(getMyNameKeyForRoom(currentRoomId), name);
       renderAll();
       switchMainView('market');
     }
@@ -1655,7 +1811,7 @@
 
     function showDailySummaryModal(dayNum) {
       const modal = document.getElementById('dailySummaryModal');
-      document.getElementById('summaryModalTitle').textContent = `${dayNum}일차 마감 일일 결산 브리핑`;
+      document.getElementById('summaryModalTitle').textContent = `${ROOM_LABELS[currentRoomId]} · ${dayNum}일차 마감 결산 브리핑`;
       const sortedStocks = [...stocks].sort((a, b) => b.rate - a.rate);
       document.getElementById('bestListContainer').innerHTML = sortedStocks.slice(0, 3).map((s, idx) => `
         <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950/60 text-xs">
@@ -1691,27 +1847,28 @@
     }
 
     function saveSnapshotBeforeTurn() {
-      localStorage.setItem(STORAGE_KEY_BACKUP_SNAPSHOT, JSON.stringify({
-        marketDay, seedMoney, stocks, students, currentStudentName, economyPhase, prevTurnStudentAssets, prevTurnStudentRanks
+      localStorage.setItem(getSnapshotKeyForRoom(currentRoomId), JSON.stringify({
+        roomCustomTitle, roomTeacherPin, marketDay, seedMoney, stocks, students, currentStudentName, economyPhase, prevTurnStudentAssets, prevTurnStudentRanks
       }));
       updateUndoButtonState();
     }
     function undoLastTurn() {
       if (!isTeacherMode) return;
-      const snapshot = localStorage.getItem(STORAGE_KEY_BACKUP_SNAPSHOT);
+      const snapshot = localStorage.getItem(getSnapshotKeyForRoom(currentRoomId));
       if (!snapshot || !confirm('직전 턴 상태로 되돌리시겠습니까?')) return;
       const data = JSON.parse(snapshot);
+      roomCustomTitle = data.roomCustomTitle || ""; roomTeacherPin = data.roomTeacherPin || "10101";
       marketDay = data.marketDay; seedMoney = data.seedMoney; stocks = data.stocks; students = data.students;
       currentStudentName = data.currentStudentName; economyPhase = data.economyPhase || 3;
       prevTurnStudentAssets = data.prevTurnStudentAssets || {}; prevTurnStudentRanks = data.prevTurnStudentRanks || {};
-      localStorage.removeItem(STORAGE_KEY_BACKUP_SNAPSHOT);
+      localStorage.removeItem(getSnapshotKeyForRoom(currentRoomId));
       updateUndoButtonState();
       pushFullStateToCloud();
       renderAll();
     }
     function updateUndoButtonState() {
       const btn = document.getElementById('undoTurnBtn');
-      const has = !!localStorage.getItem(STORAGE_KEY_BACKUP_SNAPSHOT);
+      const has = !!localStorage.getItem(getSnapshotKeyForRoom(currentRoomId));
       btn.disabled = !has;
       btn.className = has
         ? "px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold border border-amber-500/40 flex items-center gap-1 cursor-pointer"
@@ -1720,10 +1877,10 @@
 
     function exportBackupFile() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-        marketDay, seedMoney, stocks, students, currentStudentName, economyPhase, prevTurnStudentAssets, prevTurnStudentRanks
+        roomCustomTitle, roomTeacherPin, marketDay, seedMoney, stocks, students, currentStudentName, economyPhase, prevTurnStudentAssets, prevTurnStudentRanks
       }, null, 2));
       const a = document.createElement('a');
-      a.href = dataStr; a.download = `학급모의투자_${marketDay}일차_백업.json`;
+      a.href = dataStr; a.download = `학급모의투자_${ROOM_LABELS[currentRoomId]}_${marketDay}일차_백업.json`;
       document.body.appendChild(a); a.click(); a.remove();
     }
 
@@ -1734,7 +1891,8 @@
       reader.onload = function(e) {
         try {
           const data = JSON.parse(e.target.result);
-          if (confirm(`'${file.name}' 백업을 복원하고 클라우드에 동기화하시겠습니까?`)) {
+          if (confirm(`'${file.name}' 백업을 현재 반(${ROOM_LABELS[currentRoomId]})에 복원하시겠습니까?`)) {
+            roomCustomTitle = data.roomCustomTitle || ""; roomTeacherPin = data.roomTeacherPin || "10101";
             marketDay = data.marketDay || 1; seedMoney = data.seedMoney || 10000000;
             stocks = data.stocks; students = data.students;
             economyPhase = data.economyPhase || 3;
@@ -1751,6 +1909,8 @@
 
     function openClassSetupModal() {
       if (!isTeacherMode) return;
+      document.getElementById('setupRoomCustomTitleInput').value = roomCustomTitle;
+      document.getElementById('setupRoomTeacherPinInput').value = roomTeacherPin || "10101";
       const studentEntries = Object.entries(students).map(([name, obj]) => `${name}:${obj.pin || '1234'}`);
       document.getElementById('setupStudentsInput').value = studentEntries.join(', ');
       document.getElementById('setupSeedMoneyInput').value = seedMoney;
@@ -1777,7 +1937,6 @@
       setTimeout(() => modal.classList.add('hidden'), 200);
     }
 
-    // 학생 비밀번호 일괄 자동 부여 도우미 (번호순 1001~, 랜덤 4자리, 1234 통일)
     function autoAssignPins(mode) {
       const raw = document.getElementById('setupStudentsInput').value;
       const items = raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
@@ -1804,9 +1963,12 @@
     function saveClassSetup() {
       const rawEntries = document.getElementById('setupStudentsInput').value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
       if (rawEntries.length < 2) { alert('최소 2명 이상 입력해주세요.'); return; }
-      seedMoney = parseInt(document.getElementById('setupSeedMoneyInput').value) || 10000000;
-      const newStudents = {};
 
+      roomCustomTitle = document.getElementById('setupRoomCustomTitleInput').value.trim();
+      roomTeacherPin = document.getElementById('setupRoomTeacherPinInput').value.trim() || "10101";
+      seedMoney = parseInt(document.getElementById('setupSeedMoneyInput').value) || 10000000;
+
+      const newStudents = {};
       rawEntries.forEach(entry => {
         const parts = entry.split(':');
         const name = parts[0].trim();
@@ -1814,10 +1976,7 @@
         if (!name) return;
 
         if (students[name]) {
-          newStudents[name] = {
-            ...students[name],
-            pin: pin
-          };
+          newStudents[name] = { ...students[name], pin: pin };
         } else {
           newStudents[name] = { cash: seedMoney, pin: pin, holdings: {} };
         }
@@ -1839,16 +1998,17 @@
       });
 
       pushFullStateToCloud();
+      updateRoomSelectorUI();
       renderAll();
       renderStudentLoginGrid();
       closeClassSetupModal();
-      alert('학생 명단 및 개인 비밀번호가 실시간 클라우드에 저장되었습니다!');
+      alert(`[${ROOM_LABELS[currentRoomId]}] 설정 및 학생 비밀번호가 저장되었습니다!`);
     }
 
     function resetAllGameData() {
-      if (!confirm('정말로 모든 학생의 자산과 턴을 1일차로 초기화하시겠습니까?')) return;
-      localStorage.removeItem(STORAGE_KEY_CLASS_DATA);
-      localStorage.removeItem(STORAGE_KEY_BACKUP_SNAPSHOT);
+      if (!confirm(`정말로 [${ROOM_LABELS[currentRoomId]}]의 모든 자산과 턴을 1일차로 초기화하시겠습니까?\n(다른 반 데이터에는 영향을 주지 않습니다)`)) return;
+      localStorage.removeItem(getLocalKeyForRoom(currentRoomId));
+      localStorage.removeItem(getSnapshotKeyForRoom(currentRoomId));
       setupDefaults();
       pushFullStateToCloud();
       renderAll();
