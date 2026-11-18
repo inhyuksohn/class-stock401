@@ -277,11 +277,10 @@
             <span class="text-slate-500">님의 실시간 계좌</span>
           </div>
           <div class="flex items-center gap-4 font-mono">
-            <!-- ★ 추가된 입출금 버튼 영역 ★ -->
+            <!-- ★ 입출금 버튼 영역 ★ -->
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400">예수금: </span>
               <span id="studentCashDisplay" class="font-bold text-emerald-400">10,000,000원</span>
-              <!-- 교사 모드에서만 보이는 입출금 버튼 -->
               <button type="button" id="teacherCashAdjustBtn" onclick="promptCashAdjustment()" class="hidden items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 text-[10px] font-bold cursor-pointer transition-all">
                 <i class="fa-solid fa-coins"></i>입출금
               </button>
@@ -446,7 +445,7 @@
           </div>
           <div>
             <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">미산</span> 실시간 랭킹 전광판</h2>
-            <p class="text-[11px] text-slate-400">우리 반 학생들의 투자 수익률과 전일 대비 순위 등락이 실시간으로 반영됩니다.</p>
+            <p class="text-[11px] text-slate-400">우리 반 학생들의 투자 수익률(입출금 원금 보정 반영)과 전일 대비 순위 등락이 실시간으로 반영됩니다.</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -909,6 +908,7 @@
             }
             restoredStudents[sName] = {
               cash: sObj.cash !== undefined ? Number(sObj.cash) : seedMoney,
+              netDeposit: Number(sObj.netDeposit) || 0, // ★ 개인별 입출금 누적액 복원
               pin: sObj.pin ? String(sObj.pin) : "1234",
               holdings: cleanHoldings
             };
@@ -1000,6 +1000,7 @@
         const path = getFirebasePathForRoom(currentRoomId);
         firebaseDb.ref(`${path}/students/${studentName}`).set({
           cash: Number(students[studentName].cash) || 0,
+          netDeposit: Number(students[studentName].netDeposit) || 0, // ★ 입출금 누적 원금 클라우드 동기화
           pin: String(students[studentName].pin || "1234"),
           holdings: students[studentName].holdings || {}
         }).catch(err => {
@@ -1073,7 +1074,7 @@
     function selectMyStudentAccount(name) {
       currentStudentName = name;
       if (!students[currentStudentName]) {
-        students[currentStudentName] = { cash: seedMoney, pin: "1234", holdings: {} };
+        students[currentStudentName] = { cash: seedMoney, netDeposit: 0, pin: "1234", holdings: {} };
       }
       localStorage.setItem(getMyNameKeyForRoom(currentRoomId), name);
       document.getElementById('studentLoginOverlay').classList.add('hidden');
@@ -1136,7 +1137,7 @@
       const lockIcon = document.getElementById('teacherLockIcon');
       const btnLabel = document.getElementById('teacherBtnLabel');
       const btn = document.getElementById('teacherModeBtn');
-      const cashAdjustBtn = document.getElementById('teacherCashAdjustBtn'); // ★ 입출금 버튼
+      const cashAdjustBtn = document.getElementById('teacherCashAdjustBtn');
 
       if (isTeacherMode) {
         actionGroup.classList.remove('hidden');
@@ -1146,7 +1147,7 @@
         lockIcon.className = "fa-solid fa-unlock text-amber-400";
         btnLabel.textContent = "교사 ON";
         btn.className = "px-2.5 py-1.5 rounded-xl bg-amber-950/90 text-amber-300 text-xs font-black border border-amber-500/60 flex items-center gap-1 cursor-pointer";
-        if (cashAdjustBtn) { cashAdjustBtn.classList.remove('hidden'); cashAdjustBtn.classList.add('flex'); } // ★ 버튼 보이기
+        if (cashAdjustBtn) { cashAdjustBtn.classList.remove('hidden'); cashAdjustBtn.classList.add('flex'); }
       } else {
         actionGroup.classList.add('hidden');
         actionGroup.classList.remove('flex');
@@ -1155,7 +1156,7 @@
         lockIcon.className = "fa-solid fa-lock";
         btnLabel.textContent = "교사 모드";
         btn.className = "px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer";
-        if (cashAdjustBtn) { cashAdjustBtn.classList.add('hidden'); cashAdjustBtn.classList.remove('flex'); } // ★ 버튼 숨기기
+        if (cashAdjustBtn) { cashAdjustBtn.classList.add('hidden'); cashAdjustBtn.classList.remove('flex'); }
       }
       renderAll();
     }
@@ -1190,6 +1191,7 @@
       if (!students || Object.keys(students).length === 0) setupDefaultStudents();
       Object.values(students).forEach(st => {
         if (!st.pin) st.pin = "1234";
+        if (st.netDeposit === undefined) st.netDeposit = 0;
         if (!st.holdings) st.holdings = {};
       });
       if (!selectedStockCode || !stocks.some(x => x.code === selectedStockCode)) {
@@ -1252,6 +1254,7 @@
       DEFAULT_STUDENTS.forEach(name => {
         students[name] = {
           cash: seedMoney,
+          netDeposit: 0,
           pin: "1234",
           holdings: {}
         };
@@ -1319,28 +1322,28 @@
         if (stock.trend === "up") {
           // 📈 [우상향 보정] 대불황에도 최소한만 하락, 일반장 무조건 상승, 호황장 상한가 고확률 (하한가 원천 차단!)
           if (economyPhase === 1) {
-            rawRate = -0.05 + (Math.random() * 0.06); // -5% ~ +1% 방어
+            rawRate = -0.05 + (Math.random() * 0.06);
           } else if (economyPhase === 2) {
-            rawRate = -0.03 + (Math.random() * 0.06); // -3% ~ +3% 선방
+            rawRate = -0.03 + (Math.random() * 0.06);
           } else if (economyPhase === 3) {
-            rawRate = Math.random() < 0.20 ? 0.35 : (0.04 + Math.random() * 0.14); // 무조건 상승 (+4%~+18%), 20% 상한가
+            rawRate = Math.random() < 0.20 ? 0.35 : (0.04 + Math.random() * 0.14);
           } else if (economyPhase === 4) {
-            rawRate = Math.random() < 0.75 ? 0.35 : (0.12 + Math.random() * 0.14); // 75% 상한가, 아니면 +12%~+26%
+            rawRate = Math.random() < 0.75 ? 0.35 : (0.12 + Math.random() * 0.14);
           } else if (economyPhase === 5) {
-            rawRate = Math.random() < 0.90 ? 0.35 : (0.18 + Math.random() * 0.11); // 90% 상한가, 아니면 +18%~+29%
+            rawRate = Math.random() < 0.90 ? 0.35 : (0.18 + Math.random() * 0.11);
           }
         } else if (stock.trend === "down") {
           // 📉 [우하향 보정] 대호황에도 최소한만 상승, 일반장 무조건 하락, 불황장 하한가 고확률 (상한가 원천 차단!)
           if (economyPhase === 5) {
-            rawRate = -0.01 + (Math.random() * 0.06); // -1% ~ +5% 상승 제한
+            rawRate = -0.01 + (Math.random() * 0.06);
           } else if (economyPhase === 4) {
-            rawRate = -0.03 + (Math.random() * 0.06); // -3% ~ +3% 약보합
+            rawRate = -0.03 + (Math.random() * 0.06);
           } else if (economyPhase === 3) {
-            rawRate = Math.random() < 0.20 ? -0.35 : (-0.04 - Math.random() * 0.14); // 무조건 하락 (-18%~-4%), 20% 하한가
+            rawRate = Math.random() < 0.20 ? -0.35 : (-0.04 - Math.random() * 0.14);
           } else if (economyPhase === 2) {
-            rawRate = Math.random() < 0.75 ? -0.35 : (-0.12 - Math.random() * 0.14); // 75% 하한가, 아니면 -26%~-12%
+            rawRate = Math.random() < 0.75 ? -0.35 : (-0.12 - Math.random() * 0.14);
           } else if (economyPhase === 1) {
-            rawRate = Math.random() < 0.90 ? -0.35 : (-0.18 - Math.random() * 0.11); // 90% 하한가, 아니면 -29%~-18%
+            rawRate = Math.random() < 0.90 ? -0.35 : (-0.18 - Math.random() * 0.11);
           }
         } else {
           // ⚖️ [보통(랜덤) 종목]
@@ -1354,7 +1357,6 @@
         if (newPrice > 1000) newPrice = Math.round(newPrice / 10) * 10;
         if (newPrice > 100000) newPrice = Math.round(newPrice / 100) * 100;
 
-        // 일반장(3단계) 이상에서 우상향이 반올림 때문에 제자리이거나, 우하향이 제자리인 경우 최소 1호가 변동 보장
         if (stock.trend === "up" && economyPhase >= 3 && newPrice <= stock.basePrice) {
           newPrice = stock.basePrice + (stock.basePrice > 100000 ? 100 : 10);
         } else if (stock.trend === "down" && economyPhase <= 3 && newPrice >= stock.basePrice) {
@@ -1392,16 +1394,20 @@
     }
 
     /* ==========================================================================
-       6. 매수 / 매도 / 일괄 주문 / 교사 예수금 강제 조작
+       6. 매수 / 매도 / 일괄 주문 / ★ 교사 예수금 입출금 (원금 반영) ★
        ========================================================================== */
-
-    // ★ 새로 추가하는 교사 전용 예수금 조정 함수
     function promptCashAdjustment() {
       if (!isTeacherMode) return;
       const sData = students[currentStudentName];
       if (!sData) return;
 
-      const input = prompt(`[${currentStudentName}] 학생의 예수금을 조정합니다.\n\n- 입금(지급): 양수 입력 (예: 50000)\n- 출금(차감): 음수 입력 (예: -30000)\n\n현재 예수금: ${Number(sData.cash).toLocaleString()}원`, "0");
+      const curNetDep = Number(sData.netDeposit) || 0;
+      const curPrincipal = seedMoney + curNetDep;
+
+      const input = prompt(
+        `[${currentStudentName}] 학생의 예수금을 입출금합니다.\n(입출금액만큼 해당 학생의 투자 원금도 함께 조정되어 수익률이 왜곡되지 않습니다)\n\n- 입금(지급): 양수 입력 (예: 50000)\n- 출금(차감): 음수 입력 (예: -30000)\n\n• 현재 보유 예수금: ${Number(sData.cash).toLocaleString()}원\n• 현재 기준 원금: ${curPrincipal.toLocaleString()}원 (누적 입출금: ${curNetDep >= 0 ? '+' : ''}${curNetDep.toLocaleString()}원)`,
+        "0"
+      );
       if (input === null) return;
 
       const amount = parseInt(input.replace(/,/g, ''), 10);
@@ -1417,14 +1423,15 @@
       }
 
       sData.cash = Number(sData.cash) + amount;
+      sData.netDeposit = curNetDep + amount; // ★ 입출금액만큼 개인 원금도 함께 증감!
       
       pushSingleStudentToCloud(currentStudentName);
       renderAll();
 
       if (amount > 0) {
-        showOrderToast(`💰 [${currentStudentName}] 학생에게 ${amount.toLocaleString()}원이 입금(지급)되었습니다.`, "success");
+        showOrderToast(`💰 [${currentStudentName}] ${amount.toLocaleString()}원 입금 완료! (원금에 반영됨)`, "success");
       } else {
-        showOrderToast(`💸 [${currentStudentName}] 학생의 계좌에서 ${Math.abs(amount).toLocaleString()}원이 출금(차감)되었습니다.`, "sell");
+        showOrderToast(`💸 [${currentStudentName}] ${Math.abs(amount).toLocaleString()}원 출금 완료! (원금에 반영됨)`, "sell");
       }
     }
 
@@ -1439,7 +1446,10 @@
         currentStudentName = Object.keys(students)[0] || DEFAULT_STUDENTS[0];
       }
       if (!students[currentStudentName]) {
-        students[currentStudentName] = { cash: seedMoney, pin: "1234", holdings: {} };
+        students[currentStudentName] = { cash: seedMoney, netDeposit: 0, pin: "1234", holdings: {} };
+      }
+      if (students[currentStudentName].netDeposit === undefined) {
+        students[currentStudentName].netDeposit = 0;
       }
       if (!students[currentStudentName].holdings) {
         students[currentStudentName].holdings = {};
@@ -1624,8 +1634,9 @@
       updateOrderCalculation();
     }
 
+    // ★ 개인별 누적 입출금액(netDeposit)을 반영하여 왜곡 없는 수익률 계산
     function getStudentStats(name) {
-      const sData = students[name] || { cash: seedMoney, holdings: {} };
+      const sData = students[name] || { cash: seedMoney, netDeposit: 0, holdings: {} };
       let stockValue = 0;
       let totalCost = 0;
       for (const [code, h] of Object.entries(sData.holdings || {})) {
@@ -1637,8 +1648,10 @@
       }
       const cashVal = Number(sData.cash) || 0;
       const totalAsset = cashVal + stockValue;
-      const profitRate = ((totalAsset - seedMoney) / seedMoney) * 100;
-      return { cash: cashVal, stockValue, totalAsset, profitRate, totalCost };
+      const netDep = Number(sData.netDeposit) || 0;
+      const basePrincipal = Math.max(1, seedMoney + netDep); // 개인별 원금 = 초기 지원금 + 누적 입출금액
+      const profitRate = ((totalAsset - basePrincipal) / basePrincipal) * 100;
+      return { cash: cashVal, stockValue, totalAsset, profitRate, totalCost, basePrincipal, netDep };
     }
 
     function renderStudentHUD() {
@@ -2182,7 +2195,7 @@
         if (students[name]) {
           newStudents[name] = { ...students[name], pin: pin };
         } else {
-          newStudents[name] = { cash: seedMoney, pin: pin, holdings: {} };
+          newStudents[name] = { cash: seedMoney, netDeposit: 0, pin: pin, holdings: {} };
         }
       });
 
