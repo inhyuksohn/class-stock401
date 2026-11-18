@@ -99,14 +99,14 @@
               <span class="px-2 py-0.5 rounded-full bg-slate-950/40 text-emerald-200 font-black text-[10px]">매점 POS</span>
               <span class="font-black text-sm">매점 직원용 QR 계산기</span>
             </div>
-            <span class="text-[10px] text-emerald-100 font-bold">계좌 비공개 · 차감 전용</span>
+            <span class="text-[10px] text-emerald-100 font-bold">스캔 손님 잔액 확인 · 차감 전용</span>
           </div>
 
           <!-- 카메라 뷰포트 (고감도 스마트폰 스캐너) -->
           <div class="bg-slate-950/85 rounded-2xl p-2.5 border border-white/15 text-center space-y-2">
             <div id="staffQrReader" class="w-full overflow-hidden rounded-xl bg-black h-[220px] flex flex-col items-center justify-center text-xs text-slate-400 px-4">
               <i class="fa-solid fa-qrcode text-2xl text-emerald-400 mb-1.5"></i>
-              <span>아래 [카메라 켜기]를 누르고<br>QR 카드를 한 뼘(15~20cm) 거리에서 비춰주세요</span>
+              <span>아래 [카메라 켜고 QR 찍기]를 누르고<br>손님 QR 카드를 비춰주세요</span>
             </div>
 
             <div class="grid grid-cols-3 gap-1.5">
@@ -118,7 +118,6 @@
               </button>
             </div>
 
-            <!-- 카메라 초점이 안 잡히는 구형폰 대비: 기본 카메라 촬영 스캔 -->
             <div class="pt-1 flex items-center justify-between gap-2">
               <button type="button" onclick="document.getElementById('nativeCameraFileInput').click()" class="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sky-300 text-[11px] font-bold flex items-center justify-center gap-1.5">
                 <i class="fa-solid fa-bolt"></i><span>초점 안 맞을 때: 기본카메라로 찍어 인식</span>
@@ -130,15 +129,29 @@
             </div>
           </div>
 
-          <!-- 스캔된 손님 이름 (잔액은 절대 표시하지 않음) -->
-          <div class="bg-slate-950/50 rounded-2xl p-3 border border-white/20 flex items-center justify-between">
-            <div>
-              <span class="text-[10px] text-emerald-200 font-bold block">결제할 손님 (계좌 잔액 비공개)</span>
-              <div id="staffScannedCustomerName" class="text-base font-black text-amber-300 mt-0.5">손님 QR을 스캔해주세요</div>
+          <!-- ★ 스캔된 손님 이름 및 실시간 계좌 잔액 표시 ★ -->
+          <div class="bg-slate-950/60 rounded-2xl p-3.5 border border-white/20 space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-emerald-200 font-bold block">결제할 손님</span>
+                <div id="staffScannedCustomerName" class="text-lg font-black text-white mt-0.5">손님 QR을 스캔해주세요</div>
+              </div>
+              <button type="button" onclick="clearStaffScannedCustomer()" class="px-2.5 py-1.5 rounded-xl bg-white/15 active:bg-white/25 text-xs font-bold">
+                초기화
+              </button>
             </div>
-            <button type="button" onclick="clearStaffScannedCustomer()" class="px-2.5 py-1.5 rounded-xl bg-white/15 active:bg-white/25 text-xs font-bold">
-              초기화
-            </button>
+
+            <!-- 현재 예수금 잔액 큼직하게 표시 -->
+            <div class="pt-2 border-t border-white/15 flex items-baseline justify-between">
+              <span class="text-xs text-emerald-100 font-bold">현재 예수금 잔액:</span>
+              <span id="staffScannedCustomerBalance" class="text-2xl font-black font-mono text-amber-300">- 원</span>
+            </div>
+
+            <!-- 결제 금액 입력 시 결제 후 남을 잔액 실시간 미리보기 -->
+            <div id="staffExpectedRemainRow" class="hidden items-center justify-between text-xs font-mono pt-1">
+              <span class="text-slate-300">결제 후 예상 잔액:</span>
+              <span id="staffExpectedRemainBalance" class="font-bold text-emerald-300">0원</span>
+            </div>
           </div>
         </div>
 
@@ -147,9 +160,9 @@
           <div>
             <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold mb-1">
               <span>결제(차감)할 금액</span>
-              <button type="button" onclick="document.getElementById('staffAmountInput').value=''" class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-black">초기화 0원</button>
+              <button type="button" onclick="clearStaffAmount()" class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-black">초기화 0원</button>
             </div>
-            <input type="number" id="staffAmountInput" inputmode="numeric" placeholder="0"
+            <input type="number" id="staffAmountInput" inputmode="numeric" placeholder="0" oninput="updateStaffBalancePreview()"
               class="w-full bg-slate-950 border-2 border-slate-700 focus:border-emerald-400 rounded-2xl px-3.5 py-2.5 text-right font-mono text-2xl font-black text-white outline-none select-text">
 
             <!-- 엄지손가락용 큼직한 금액 버튼 -->
@@ -183,11 +196,11 @@
           </button>
         </div>
 
-        <!-- 매점 영수증 로그 (손님 잔액 비공개) -->
+        <!-- 매점 영수증 로그 -->
         <div class="bg-slate-900 rounded-3xl p-4 border border-slate-800 space-y-2">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-black text-slate-300"><i class="fa-solid fa-receipt text-emerald-400 mr-1"></i>매점 최근 결제 영수증</h3>
-            <span class="text-[10px] text-slate-500">잔액 비공개</span>
+            <span class="text-[10px] text-slate-500">최근 15건</span>
           </div>
           <div id="staffReceiptLogList" class="space-y-1.5 max-h-36 overflow-y-auto divide-y divide-slate-800/60 text-xs"></div>
         </div>
@@ -473,8 +486,9 @@
         }
 
         if (staffScannedStudent && students[staffScannedStudent]) {
-          document.getElementById('staffScannedCustomerName').textContent = `👤 ${staffScannedStudent} 학생 (스캔 완료)`;
+          document.getElementById('staffScannedCustomerName').textContent = `👤 ${staffScannedStudent} 학생`;
         }
+        updateStaffBalancePreview();
 
         updateAdminHeaderUI();
         renderTeacherWalletUI();
@@ -492,21 +506,15 @@
       subscribeRoom(roomId);
     }
 
-    /* =========================================================================
-       ★ 초고속 인식을 위한 단축 QR 페이로드 생성 (예: "1:강채원") ★
-       스마트폰 카메라가 0.1초 만에 초점을 잡을 수 있도록 QR 격자를 큼직하게 만듭니다.
-       ========================================================================= */
     function getCompactQrPayload(roomId, studentName) {
       const roomNum = roomId.replace('class_', '');
       return `${roomNum}:${studentName}`;
     }
 
-    // 단축 QR("1:강채원"), 기존 URL QR("https://...name=강채원"), JSON QR 모두 100% 호환 해석!
     function parseAnyQrString(raw) {
       if (!raw) return null;
       const text = String(raw).trim();
 
-      // 1) 신규 초고속 단축 포맷 ("1:강채원" 또는 "class_1:강채원")
       if (/^(class_)?[1-5]:.+/.test(text)) {
         const idx = text.indexOf(':');
         const rNum = text.slice(0, idx).replace('class_', '');
@@ -514,7 +522,6 @@
         return { room: `class_${rNum}`, name: sName };
       }
 
-      // 2) 기존 URL 포맷 (?room=1&name=...)
       if (text.includes('name=')) {
         try {
           const url = new URL(text);
@@ -525,7 +532,6 @@
         } catch (e) {}
       }
 
-      // 3) 구형 JSON 포맷
       try {
         const obj = JSON.parse(text);
         if (obj.name) {
@@ -533,7 +539,6 @@
         }
       } catch (e) {}
 
-      // 4) 학생 이름만 단독으로 들어있는 경우
       if (students[text]) {
         return { room: currentRoomId, name: text };
       }
@@ -541,9 +546,6 @@
       return null;
     }
 
-    /* =========================================================================
-       ★ 스마트폰 다중 렌즈 대응 & 네이티브 하드웨어 가속 QR 스캐너 ★
-       ========================================================================= */
     async function getPreferredCameraConfig() {
       try {
         if (availableCameras.length === 0) {
@@ -553,10 +555,8 @@
           if (selectedCameraIdx >= 0 && selectedCameraIdx < availableCameras.length) {
             return availableCameras[selectedCameraIdx].id;
           }
-          // 후면 메인(광각 아닌 일반 1x) 카메라 우선 탐색
           const backCams = availableCameras.filter(c => /back|rear|후면|environment/i.test(c.label));
           if (backCams.length > 0) {
-            // 보통 갤럭시/아이폰에서 첫 번째 후면 카메라(또는 0번)가 메인 1x 자동초점 렌즈
             const mainBack = backCams.find(c => !/ultra|wide|초광각|0\.5/i.test(c.label)) || backCams[0];
             selectedCameraIdx = availableCameras.indexOf(mainBack);
             return mainBack.id;
@@ -575,7 +575,7 @@
           return { width: boxSize, height: boxSize };
         },
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true // 스마트폰 내장 하드웨어 QR 인식기 강제 활성화!
+          useBarCodeDetectorIfSupported: true
         },
         videoConstraints: {
           facingMode: "environment",
@@ -586,7 +586,6 @@
       };
     }
 
-    // 초점이 안 맞을 때 다음 후면 렌즈로 즉시 전환
     async function switchCameraLens(mode) {
       try {
         if (availableCameras.length === 0) {
@@ -606,7 +605,6 @@
       }
     }
 
-    // 기본 카메라 앱으로 사진 찍어 즉시 인식 (초점 문제 100% 해결 폴백)
     async function scanFromPhotoFile(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -616,14 +614,11 @@
         fileScanner.clear();
         handleStaffScannedQr(decodedText);
       } catch (err) {
-        showToast("❌ 사진에서 QR코드를 찾지 못했습니다. QR이 선명하게 나오도록 다시 찍어주세요.", "error");
+        showToast("❌ 사진에서 QR코드를 찾지 못했습니다. 다시 찍어주세요.", "error");
       }
       event.target.value = "";
     }
 
-    /* =========================================================================
-       관리자 모드 인증 및 화면 전환
-       ========================================================================= */
     function isTeacherAuthenticated() {
       const savedPin = localStorage.getItem(STORAGE_KEY_TEACHER_AUTH);
       return (savedPin === roomTeacherPin || savedPin === "10101");
@@ -781,6 +776,12 @@
     function addPosAmount(inputId, val) {
       const inp = document.getElementById(inputId);
       inp.value = (parseInt(inp.value, 10) || 0) + val;
+      if (inputId === 'staffAmountInput') updateStaffBalancePreview();
+    }
+
+    function clearStaffAmount() {
+      document.getElementById('staffAmountInput').value = '';
+      updateStaffBalancePreview();
     }
 
     function setMemo(inputId, text) {
@@ -837,8 +838,48 @@
     }
 
     /* =========================================================================
-       ★ [매점 직원 전용 계산기] 스캔 및 차감 실행 ★
+       ★ [매점 직원 전용 계산기] 스캔 손님 잔액 표시 및 차감 실행 ★
        ========================================================================= */
+    function updateStaffBalancePreview() {
+      const balEl = document.getElementById('staffScannedCustomerBalance');
+      const expRow = document.getElementById('staffExpectedRemainRow');
+      const expEl = document.getElementById('staffExpectedRemainBalance');
+      if (!balEl) return;
+
+      if (!staffScannedStudent || !students[staffScannedStudent]) {
+        balEl.textContent = "- 원";
+        balEl.className = "text-2xl font-black font-mono text-slate-500";
+        if (expRow) {
+          expRow.classList.add('hidden');
+          expRow.classList.remove('flex');
+        }
+        return;
+      }
+
+      const curCash = Number(students[staffScannedStudent].cash) || 0;
+      balEl.textContent = `${curCash.toLocaleString()}원`;
+      balEl.className = "text-2xl font-black font-mono text-amber-300";
+
+      const inputAmt = parseInt(document.getElementById('staffAmountInput').value, 10) || 0;
+      if (expRow && expEl) {
+        if (inputAmt > 0) {
+          expRow.classList.remove('hidden');
+          expRow.classList.add('flex');
+          const remain = curCash - inputAmt;
+          if (remain >= 0) {
+            expEl.textContent = `${remain.toLocaleString()}원`;
+            expEl.className = "font-bold text-emerald-300";
+          } else {
+            expEl.textContent = `⚠️ 잔액 부족 (${remain.toLocaleString()}원)`;
+            expEl.className = "font-black text-rose-400";
+          }
+        } else {
+          expRow.classList.add('hidden');
+          expRow.classList.remove('flex');
+        }
+      }
+    }
+
     async function startStaffScanner() {
       await stopStaffScanner();
       const camConfig = await getPreferredCameraConfig();
@@ -884,14 +925,17 @@
       }
 
       staffScannedStudent = parsed.name;
-      document.getElementById('staffScannedCustomerName').textContent = `👤 ${parsed.name} 학생 (스캔 완료)`;
-      showToast(`✅ [${parsed.name}] 스캔 성공! 금액을 입력하고 결제 승인을 누르세요.`);
+      const curCash = Number(students[parsed.name].cash) || 0;
+      document.getElementById('staffScannedCustomerName').textContent = `👤 ${parsed.name} 학생`;
+      updateStaffBalancePreview();
+      showToast(`✅ [${parsed.name}] 스캔 완료! (잔액: ${curCash.toLocaleString()}원)`);
     }
 
     function clearStaffScannedCustomer() {
       staffScannedStudent = "";
       const el = document.getElementById('staffScannedCustomerName');
       if (el) el.textContent = "손님 QR을 스캔해주세요";
+      updateStaffBalancePreview();
     }
 
     function executeStaffChargeOnly() {
@@ -910,7 +954,7 @@
       const currentCash = Number(st.cash) || 0;
 
       if (currentCash < amount) {
-        showToast(`❌ [${staffScannedStudent}] 손님의 예수금 잔액이 부족합니다!`, "error");
+        showToast(`❌ [${staffScannedStudent}] 잔액 부족! (현재 잔액: ${currentCash.toLocaleString()}원)`, "error");
         return;
       }
 
@@ -938,7 +982,7 @@
       document.getElementById('staffAmountInput').value = "";
       clearStaffScannedCustomer();
 
-      showToast(`🛒 [${paidCustomer}] ${amount.toLocaleString()}원 매점 결제 완료!`);
+      showToast(`🛒 [${paidCustomer}] ${amount.toLocaleString()}원 결제 완료! (남은 잔액: ${newCash.toLocaleString()}원)`);
     }
 
     function renderStaffReceiptLogs() {
@@ -955,11 +999,12 @@
         const dt = new Date(l.time);
         const timeStr = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
         const who = l.student || l.from || '-';
+        const remainTxt = l.balanceAfter !== undefined ? ` · 남은잔액 ${Number(l.balanceAfter).toLocaleString()}원` : '';
         return `
           <div class="py-1.5 flex items-center justify-between">
             <div>
               <span class="font-bold text-slate-200">[${who}] ${l.memo || '매점 결제'}</span>
-              <span class="text-[10px] text-slate-500 block">${timeStr}</span>
+              <span class="text-[10px] text-slate-400 block">${timeStr}${remainTxt}</span>
             </div>
             <span class="font-mono font-black text-rose-400">-${Number(l.amount).toLocaleString()}원</span>
           </div>
@@ -1050,7 +1095,6 @@
       showToast("⚠️ 등록된 학생 QR코드가 아닙니다.", "error");
     }
 
-    // ★ 스마트폰 카메라 초고속 인식용 고선명 QR 카드 인쇄 ★
     function printAllStudentQrCards() {
       if (!isTeacherAuthenticated()) {
         openAdminAuthModal();
