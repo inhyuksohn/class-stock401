@@ -410,9 +410,9 @@
       </aside>
     </div>
 
-    <!-- 2. 학급 랭킹 전광판 뷰 -->
+    <!-- 2. 학급 랭킹 전광판 뷰 (수익률순 / 총자산순 정렬 지원) -->
     <div id="rankingView" class="hidden w-full h-full p-4 md:p-6 overflow-y-auto bg-slate-950 flex flex-col">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
             <i class="fa-solid fa-trophy"></i>
@@ -422,7 +422,15 @@
             <p class="text-[11px] text-slate-400">학생별 투자 원금(초기 지원금 + 입출금액) 대비 수익률과 순위가 실시간으로 반영됩니다.</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+            <button type="button" id="rankSortRateBtn" onclick="setRankingSort('profitRate')" class="px-2.5 py-1 rounded-lg font-black transition-all bg-rose-600 text-white shadow cursor-pointer">
+              📈 수익률순
+            </button>
+            <button type="button" id="rankSortAssetBtn" onclick="setRankingSort('totalAsset')" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
+              💰 총자산순
+            </button>
+          </div>
           <span class="text-xs text-slate-400">기본 시작금: <strong class="text-slate-200 font-mono" id="initSeedMoneyDisplay">10,000,000원</strong></span>
         </div>
       </div>
@@ -438,8 +446,8 @@
                 <th class="py-3 px-4 text-right">투자 원금</th>
                 <th class="py-3 px-4 text-right">보유 예수금</th>
                 <th class="py-3 px-4 text-right">주식 평가액</th>
-                <th class="py-3 px-4 text-right">총 평가자산</th>
-                <th class="py-3 px-4 text-right">수익률</th>
+                <th class="py-3 px-4 text-right cursor-pointer hover:text-amber-300" onclick="setRankingSort('totalAsset')">총 평가자산 ↕</th>
+                <th class="py-3 px-4 text-right cursor-pointer hover:text-rose-400" onclick="setRankingSort('profitRate')">수익률 ↕</th>
                 <th class="py-3 px-4 text-center">계좌 보호</th>
               </tr>
             </thead>
@@ -460,7 +468,7 @@
       <div class="space-y-3 text-slate-300 leading-relaxed">
         <p>• <strong>반별 독립 채널 (미산~부마)</strong>: 상단에서 본인 학급(미산~부마)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
         <p>• <strong>예수금 입출금 및 원금 반영</strong>: 교사 모드의 <strong>[입출금]</strong>으로 예수금을 지급/차감하면 해당 금액만큼 학생의 투자 원금도 함께 증감되어 수익률이 왜곡되지 않습니다. (이미 지급한 금액의 원금만 수정할 때는 <code>=10000000</code>처럼 앞에 <code>=</code>를 붙여 입력하면 됩니다.)</p>
-        <p>• <strong>최대 30일 슬라이딩 차트</strong>: 차트는 최근 30일간의 주가 흐름을 보여주며, 30일이 지나면 <code>2일 ~ 31일</code>처럼 실제 진행 일차에 맞춰 날짜가 이동합니다.</p>
+        <p>• <strong>수익률순 / 총자산순 랭킹 정렬</strong>: 랭킹 전광판 우측 상단 버튼으로 <strong>[📈 수익률순]</strong>과 <strong>[💰 총자산순]</strong>을 언제든 전환할 수 있습니다.</p>
       </div>
       <div class="flex justify-end pt-2">
         <button type="button" onclick="closeTutorialModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl cursor-pointer">닫기</button>
@@ -672,6 +680,7 @@
     let economyPhase = 3;
     let prevTurnStudentAssets = {};
     let prevTurnStudentRanks = {};
+    let rankingSortMode = 'profitRate'; // 기본값: 수익률 높은순 ('profitRate' | 'totalAsset')
 
     let isTeacherMode = false;
     let firebaseDb = null;
@@ -1190,9 +1199,10 @@
       const econConfig = ECON_CONFIGS[economyPhase];
 
       prevTurnStudentAssets = {};
+      // ★ 전일 대비 순위 기록도 수익률 높은순 기준으로 저장 ★
       const currentRankedBeforeTurn = Object.keys(students).map(name => ({
-        name, totalAsset: getStudentStats(name).totalAsset
-      })).sort((a, b) => b.totalAsset - a.totalAsset);
+        name, ...getStudentStats(name)
+      })).sort((a, b) => (b.profitRate - a.profitRate) || (b.totalAsset - a.totalAsset));
 
       prevTurnStudentRanks = {};
       currentRankedBeforeTurn.forEach((item, idx) => {
@@ -1261,7 +1271,6 @@
         stock.change = stock.price - stock.basePrice;
         stock.rate = ((stock.change / stock.basePrice) * 100);
         stock.history.push(stock.price);
-        // ★ 최대 30일치까지 보관하고 30일을 초과하면 가장 오래된 1일치를 밀어냄 (슬라이딩 윈도우)
         if (stock.history.length > 30) stock.history.shift();
       });
 
@@ -1275,9 +1284,6 @@
       }
     }
 
-    /* ==========================================================================
-       ★ 교사 예수금 입출금 (투자원금 자동 연동 + '=금액'으로 원금만 보정 기능 지원) ★
-       ========================================================================== */
     function promptCashAdjustment() {
       if (!isTeacherMode) return;
       const sData = students[currentStudentName];
@@ -1299,7 +1305,6 @@
 
       const trimmed = input.trim();
 
-      // 앞에 '='를 붙이면 현금(cash)은 건드리지 않고 누적 입출금 원금(netDeposit)만 즉시 보정!
       if (trimmed.startsWith('=')) {
         const targetNetDep = parseInt(trimmed.slice(1).replace(/,/g, ''), 10);
         if (isNaN(targetNetDep)) {
@@ -1513,7 +1518,6 @@
       updateOrderCalculation();
     }
 
-    // ★ 개인별 투자원금(초기 지원금 + 누적 입출금액) 대비 수익률 계산
     function getStudentStats(name) {
       const sData = students[name] || { cash: seedMoney, netDeposit: 0, holdings: {} };
       let stockValue = 0;
@@ -1622,9 +1626,30 @@
       }).join('');
     }
 
+    // ★ 수익률순 / 총자산순 랭킹 정렬 전환 함수 ★
+    function setRankingSort(mode) {
+      rankingSortMode = mode;
+      const rateBtn = document.getElementById('rankSortRateBtn');
+      const assetBtn = document.getElementById('rankSortAssetBtn');
+      if (rateBtn && assetBtn) {
+        rateBtn.className = (mode === 'profitRate')
+          ? "px-2.5 py-1 rounded-lg font-black transition-all bg-rose-600 text-white shadow cursor-pointer"
+          : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
+        assetBtn.className = (mode === 'totalAsset')
+          ? "px-2.5 py-1 rounded-lg font-black transition-all bg-amber-600 text-white shadow cursor-pointer"
+          : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
+      }
+      renderClassRankingTable();
+    }
+
     function renderClassRankingTable() {
       const tbody = document.getElementById('classRankingTableBody');
-      const rankedList = Object.keys(students).map(name => ({ name, ...getStudentStats(name) })).sort((a, b) => b.totalAsset - a.totalAsset);
+      const rankedList = Object.keys(students).map(name => ({ name, ...getStudentStats(name) })).sort((a, b) => {
+        if (rankingSortMode === 'profitRate') {
+          return (b.profitRate - a.profitRate) || (b.totalAsset - a.totalAsset);
+        }
+        return (b.totalAsset - a.totalAsset) || (b.profitRate - a.profitRate);
+      });
 
       tbody.innerHTML = rankedList.map((item, idx) => {
         const sign = item.profitRate >= 0 ? '+' : '';
@@ -1767,12 +1792,11 @@
       updateChart(s);
     }
 
-    // ★ 최대 30일 표시 및 현재 진행 일차(marketDay) 동기화 차트 ★
     function updateChart(stock) {
       const canvasEl = document.getElementById('stockHistoryChart');
       const ctx = canvasEl.getContext('2d');
       const fullHist = Array.isArray(stock.history) ? stock.history : [stock.price];
-      const hist = fullHist.slice(-30); // 최대 30개 표시
+      const hist = fullHist.slice(-30);
       const startDay = Math.max(1, marketDay - hist.length + 1);
       const labels = hist.map((_, i) => `${startDay + i}일`);
 
