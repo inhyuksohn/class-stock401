@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>학급 모의투자 거래소 - KOSDAQ 클래스 (멀티 클래스 서버)</title>
+  <title>학급 모의투자 거래소 - KOSDAQ 클래스 (실현손익·실현수익률 에디션)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -85,7 +85,9 @@
         <button type="button" onclick="openTeacherAuthModal()" class="text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer">
           <i class="fa-solid fa-user-shield"></i> 선생님(교사 모드)으로 접속하기
         </button>
-        <span class="text-[11px] text-slate-500">다학급 독립 서버 지원</span>
+        <a href="pay.html" class="text-emerald-400 hover:underline font-bold flex items-center gap-1">
+          <i class="fa-solid fa-qrcode"></i> ClassPay 지갑/포스기 열기
+        </a>
       </div>
     </div>
   </div>
@@ -156,6 +158,9 @@
         </button>
         <button type="button" id="viewRankingBtn" onclick="switchMainView('ranking')" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
           <i class="fa-solid fa-trophy mr-1 text-amber-400"></i>랭킹
+        </button>
+        <button type="button" onclick="openMyPayWallet()" class="px-2.5 py-1 rounded-lg font-black text-emerald-300 hover:bg-emerald-950/60 transition-all cursor-pointer" title="내 학급화폐 QR 지갑 및 장부 확인">
+          <i class="fa-solid fa-qrcode mr-1 text-emerald-400"></i>페이 지갑
         </button>
       </div>
 
@@ -242,25 +247,38 @@
         <div id="stockListContainer" class="flex-1 overflow-y-auto divide-y divide-slate-800/60"></div>
       </aside>
 
-      <!-- [중앙] 차트 & 포트폴리오 & 주주 현황 -->
+      <!-- [중앙] 차트 & 실현손익 성적표 & 포트폴리오 -->
       <section class="flex-1 h-full flex flex-col bg-slate-950 overflow-y-auto">
+        <!-- ★ 학생 상단 HUD: 예수금 + 실현손익 + 실현수익률 직관 표시 ★ -->
         <div class="p-3 bg-indigo-950/30 border-b border-indigo-900/40 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-2">
             <span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-[11px]" id="hudRoomBadge">미산</span>
             <span class="font-extrabold text-indigo-300 text-sm" id="hudStudentName">-</span>
-            <span class="text-slate-500">님의 실시간 계좌</span>
+            <span class="text-slate-500">님의 계좌</span>
           </div>
-          <div class="flex items-center gap-4 font-mono flex-wrap">
+          <div class="flex items-center gap-3.5 font-mono flex-wrap">
             <div class="flex items-center gap-1.5">
-              <span class="text-slate-400">예수금: </span>
+              <span class="text-slate-400">예수금(페이):</span>
               <span id="studentCashDisplay" class="font-bold text-emerald-400">10,000,000원</span>
-              <button type="button" id="teacherCashAdjustBtn" onclick="promptCashAdjustment()" class="hidden items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 text-[10px] font-bold cursor-pointer transition-all">
+              <button type="button" onclick="openMyPayWallet()" class="px-1.5 py-0.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded border border-emerald-500/40 text-[10px] font-bold cursor-pointer">
+                <i class="fa-solid fa-wallet mr-0.5"></i>지갑
+              </button>
+              <button type="button" id="teacherCashAdjustBtn" onclick="promptCashAdjustment()" class="hidden items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded border border-amber-500/40 text-[10px] font-bold cursor-pointer">
                 <i class="fa-solid fa-coins"></i>입출금
               </button>
             </div>
-            <div><span class="text-slate-400">투자원금: </span><span id="studentPrincipalDisplay" class="font-bold text-amber-300">10,000,000원</span></div>
-            <div><span class="text-slate-400">총 자산: </span><span id="studentTotalAssetDisplay" class="font-black text-slate-200">10,000,000원</span></div>
-            <div><span class="text-slate-400">수익률: </span><span id="studentProfitRateDisplay" class="font-bold text-slate-400">0.00%</span></div>
+            <div class="h-3.5 w-px bg-slate-800 hidden sm:block"></div>
+            <div>
+              <span class="text-slate-400">실현손익: </span>
+              <span id="studentRealizedProfitDisplay" class="font-black text-slate-200">0원</span>
+            </div>
+            <div>
+              <span class="text-slate-400">실현수익률: </span>
+              <span id="studentRealizedRateDisplay" class="font-black text-slate-400">0.00%</span>
+            </div>
+            <button type="button" id="teacherRealizedAdjustBtn" onclick="promptRealizedAdjustment()" class="hidden items-center gap-1 px-1.5 py-0.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded border border-rose-500/40 text-[10px] font-bold cursor-pointer">
+              <i class="fa-solid fa-sliders"></i>실현보정
+            </button>
           </div>
         </div>
 
@@ -285,16 +303,36 @@
           </div>
         </div>
 
-        <div class="p-4 flex-shrink-0 flex flex-col h-[280px] md:h-[320px] relative z-0 overflow-hidden">
+        <div class="p-4 flex-shrink-0 flex flex-col h-[250px] md:h-[280px] relative z-0 overflow-hidden">
           <div class="w-full h-full relative bg-slate-900/40 rounded-xl border border-slate-800/80 p-2 overflow-hidden">
             <canvas id="stockHistoryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- ★ 내 실현손익/평가손익 요약 배너 ★ -->
+        <div class="px-4 pt-1 pb-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5">
+            <span class="text-[10px] text-slate-400 font-sans block">누적 매도 투자원금</span>
+            <span id="summaryInvestedCost" class="font-bold text-slate-200 text-sm">0원</span>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5">
+            <span class="text-[10px] text-slate-400 font-sans block">누적 실현손익 (확정수익)</span>
+            <span id="summaryRealizedProfit" class="font-black text-slate-200 text-sm">0원</span>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5">
+            <span class="text-[10px] text-slate-400 font-sans block">실현수익률 (투자대비)</span>
+            <span id="summaryRealizedRate" class="font-black text-slate-200 text-sm">0.00%</span>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5">
+            <span class="text-[10px] text-slate-400 font-sans block">보유주식 평가손익 (미실현)</span>
+            <span id="summaryUnrealizedProfit" class="font-bold text-slate-400 text-sm">0원 (0.00%)</span>
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 border-t border-slate-800 bg-slate-950 relative z-10 flex-shrink-0">
           <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
             <h3 class="text-xs font-bold text-slate-300 mb-2 flex items-center justify-between">
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-wallet text-emerald-400"></i>내 보유 포트폴리오</span>
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-wallet text-emerald-400"></i>내 보유 포트폴리오 (매도 시 실현손익 확정)</span>
               <span class="text-[10px] text-slate-500" id="portfolioCountBadge">0종목</span>
             </h3>
             <div class="overflow-x-auto max-h-48 overflow-y-auto">
@@ -303,9 +341,9 @@
                   <tr class="text-slate-500 border-b border-slate-800/80 pb-1 font-medium text-[11px]">
                     <th class="py-1.5">종목명</th>
                     <th class="py-1.5">수량</th>
-                    <th class="py-1.5">평균가</th>
-                    <th class="py-1.5">평가액</th>
-                    <th class="py-1.5 text-right">수익률</th>
+                    <th class="py-1.5">매수평균가</th>
+                    <th class="py-1.5">평가손익</th>
+                    <th class="py-1.5 text-right">평가수익률</th>
                   </tr>
                 </thead>
                 <tbody id="studentPortfolioTableBody" class="divide-y divide-slate-800/40 font-mono text-[11px]"></tbody>
@@ -348,7 +386,7 @@
           <div class="grid grid-cols-2 gap-1.5 text-xs">
             <button type="button" onclick="sellAllHoldings()" class="py-2 px-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-black flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all cursor-pointer">
               <span class="flex items-center gap-1 text-[11px]"><i class="fa-solid fa-money-bill-transfer"></i>전량 매도</span>
-              <span class="text-[9px] font-normal text-rose-400">보유주식 전액 환원</span>
+              <span class="text-[9px] font-normal text-rose-400">실현손익 즉시 확정</span>
             </button>
             <button type="button" onclick="aiRandomBuy()" class="py-2 px-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-black flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all cursor-pointer">
               <span class="flex items-center gap-1 text-[11px]"><i class="fa-solid fa-robot text-amber-400"></i>AI 매수</span>
@@ -398,8 +436,8 @@
               <span id="orderTotalPriceDisplay" class="font-bold text-slate-200">0원</span>
             </div>
             <div class="flex items-center justify-between text-slate-500 text-[11px]">
-              <span>실시간 클라우드 체결:</span>
-              <span class="text-emerald-400">즉시 반영</span>
+              <span>매도 시 실현손익:</span>
+              <span id="expectedRealizedDisplay" class="text-emerald-400">즉시 반영</span>
             </div>
           </div>
         </div>
@@ -410,7 +448,7 @@
       </aside>
     </div>
 
-    <!-- 2. 학급 랭킹 전광판 뷰 (수익률순 / 총자산순 정렬 지원) -->
+    <!-- 2. 학급 랭킹 전광판 뷰 (실현수익률 순위 / 실현손익 순위) -->
     <div id="rankingView" class="hidden w-full h-full p-4 md:p-6 overflow-y-auto bg-slate-950 flex flex-col">
       <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div class="flex items-center gap-2.5">
@@ -418,20 +456,19 @@
             <i class="fa-solid fa-trophy"></i>
           </div>
           <div>
-            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">미산</span> 실시간 랭킹 전광판</h2>
-            <p class="text-[11px] text-slate-400">학생별 투자 원금(초기 지원금 + 입출금액) 대비 수익률과 순위가 실시간으로 반영됩니다.</p>
+            <h2 class="text-base font-black text-slate-100"><span id="rankingRoomTitle" class="text-amber-300">미산</span> 실시간 실현손익 랭킹 전광판</h2>
+            <p class="text-[11px] text-slate-400">예수금 규모와 무관하게 실제 주식을 매도하여 확정한 <strong>[실현수익률]</strong> 및 <strong>[실현손익]</strong> 순위입니다.</p>
           </div>
         </div>
-        <div class="flex items-center gap-3 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap">
           <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
-            <button type="button" id="rankSortRateBtn" onclick="setRankingSort('profitRate')" class="px-2.5 py-1 rounded-lg font-black transition-all bg-rose-600 text-white shadow cursor-pointer">
-              📈 수익률순
+            <button type="button" id="rankSortRateBtn" onclick="setRankingSort('realizedRate')" class="px-3 py-1.5 rounded-lg font-black transition-all bg-rose-600 text-white shadow cursor-pointer">
+              📈 실현수익률 순위
             </button>
-            <button type="button" id="rankSortAssetBtn" onclick="setRankingSort('totalAsset')" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
-              💰 총자산순
+            <button type="button" id="rankSortProfitBtn" onclick="setRankingSort('realizedProfit')" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
+              💰 실현손익(금액) 순위
             </button>
           </div>
-          <span class="text-xs text-slate-400">기본 시작금: <strong class="text-slate-200 font-mono" id="initSeedMoneyDisplay">10,000,000원</strong></span>
         </div>
       </div>
 
@@ -441,14 +478,14 @@
             <thead class="bg-slate-950/80 text-slate-400 border-b border-slate-800 font-bold sticky top-0">
               <tr>
                 <th class="py-3 px-4 text-center w-20">순위</th>
-                <th class="py-3 px-4 text-center w-28">전주(전일) 대비</th>
-                <th class="py-3 px-4">학생 이름 (계정)</th>
-                <th class="py-3 px-4 text-right">투자 원금</th>
-                <th class="py-3 px-4 text-right">보유 예수금</th>
-                <th class="py-3 px-4 text-right">주식 평가액</th>
-                <th class="py-3 px-4 text-right cursor-pointer hover:text-amber-300" onclick="setRankingSort('totalAsset')">총 평가자산 ↕</th>
-                <th class="py-3 px-4 text-right cursor-pointer hover:text-rose-400" onclick="setRankingSort('profitRate')">수익률 ↕</th>
-                <th class="py-3 px-4 text-center">계좌 보호</th>
+                <th class="py-3 px-4 text-center w-28">전일 대비</th>
+                <th class="py-3 px-4">학생 이름</th>
+                <th class="py-3 px-4 text-right">누적 투자원금(매도)</th>
+                <th class="py-3 px-4 text-right cursor-pointer hover:text-amber-300" onclick="setRankingSort('realizedProfit')">실현손익 (확정) ↕</th>
+                <th class="py-3 px-4 text-right cursor-pointer hover:text-rose-400" onclick="setRankingSort('realizedRate')">실현수익률 ↕</th>
+                <th class="py-3 px-4 text-right">보유주식 평가손익</th>
+                <th class="py-3 px-4 text-right">보유 예수금(페이)</th>
+                <th class="py-3 px-4 text-center">계좌 관리</th>
               </tr>
             </thead>
             <tbody id="classRankingTableBody" class="divide-y divide-slate-800/60 font-mono"></tbody>
@@ -462,13 +499,13 @@
   <div id="tutorialModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs p-5 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-extrabold text-base text-amber-300"><i class="fa-solid fa-book-open mr-1.5"></i>KOSDAQ 클래스 다학급 거래소 이용 안내</h3>
+        <h3 class="font-extrabold text-base text-amber-300"><i class="fa-solid fa-book-open mr-1.5"></i>실현손익 & 실현수익률 산정 안내</h3>
         <button type="button" onclick="closeTutorialModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-slate-300 leading-relaxed">
-        <p>• <strong>반별 독립 채널 (미산~부마)</strong>: 상단에서 본인 학급(미산~부마)을 선택하면 각 반의 주가, 턴, 학생 명단이 서로 섞이지 않고 독립적으로 운영됩니다.</p>
-        <p>• <strong>예수금 입출금 및 원금 반영</strong>: 교사 모드의 <strong>[입출금]</strong>으로 예수금을 지급/차감하면 해당 금액만큼 학생의 투자 원금도 함께 증감되어 수익률이 왜곡되지 않습니다. (이미 지급한 금액의 원금만 수정할 때는 <code>=10000000</code>처럼 앞에 <code>=</code>를 붙여 입력하면 됩니다.)</p>
-        <p>• <strong>수익률순 / 총자산순 랭킹 정렬</strong>: 랭킹 전광판 우측 상단 버튼으로 <strong>[📈 수익률순]</strong>과 <strong>[💰 총자산순]</strong>을 언제든 전환할 수 있습니다.</p>
+        <p>• <strong>실현손익이란?</strong> 주식을 매수한 뒤 실제로 <strong>매도(판매)하여 확정 지은 순수익금</strong>입니다.</p>
+        <p>• <strong>실현수익률(%) 계산법</strong>: <code>(누적 실현손익 ÷ 매도한 주식의 투자원금) × 100</code>으로 계산됩니다. 예를 들어 예수금이 1,000만 원이더라도 <strong>100만 원어치 주식을 사서 110만 원에 팔았다면 실현손익은 +10만 원, 실현수익률은 정확히 +10.00%</strong>가 됩니다.</p>
+        <p>• <strong>학급페이(ClassPay)와 완전 분리</strong>: 학급 매점에서 간식을 사 먹거나 상점을 받아 예수금이 변해도 실현손익과 실현수익률에는 전혀 영향을 주지 않습니다.</p>
       </div>
       <div class="flex justify-end pt-2">
         <button type="button" onclick="closeTutorialModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-xl cursor-pointer">닫기</button>
@@ -521,8 +558,8 @@
       </div>
 
       <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs mb-4">
-        <span class="text-slate-400"><strong id="summaryStudentName" class="text-indigo-300">-</strong> 님의 하루 자산 변동</span>
-        <span id="summaryStudentDailyReturn" class="font-mono font-bold text-sm text-emerald-400">+0원 (+0.00%)</span>
+        <span class="text-slate-400"><strong id="summaryStudentName" class="text-indigo-300">-</strong> 님의 누적 실현손익(수익률)</span>
+        <span id="summaryStudentDailyReturn" class="font-mono font-bold text-sm text-emerald-400">+0원 (0.00%)</span>
       </div>
 
       <button type="button" onclick="closeDailySummaryModal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-indigo-600 text-white font-extrabold rounded-xl text-xs shadow-lg cursor-pointer">
@@ -680,7 +717,7 @@
     let economyPhase = 3;
     let prevTurnStudentAssets = {};
     let prevTurnStudentRanks = {};
-    let rankingSortMode = 'profitRate'; // 기본값: 수익률 높은순 ('profitRate' | 'totalAsset')
+    let rankingSortMode = 'realizedRate'; // 'realizedRate' (실현수익률순) | 'realizedProfit' (실현손익 금액순)
 
     let isTeacherMode = false;
     let firebaseDb = null;
@@ -696,6 +733,11 @@
       4: { label: "4단계: 경기 회복 (호황기 🌤️)", color: "text-emerald-400", bias: 0.06, volatility: 0.06, extremeChance: 0.04, extremeType: 'upper' },
       5: { label: "5단계: 경제 대호황 (불장 🚀)", color: "text-rose-500", bias: 0.16, volatility: 0.08, extremeChance: 0.12, extremeType: 'upper' }
     };
+
+    function openMyPayWallet() {
+      const roomNum = currentRoomId.replace('class_', '');
+      location.href = `pay.html?room=${roomNum}&name=${encodeURIComponent(currentStudentName)}`;
+    }
 
     function showOrderToast(message, type = 'success') {
       const banner = document.getElementById('orderToastBanner');
@@ -717,7 +759,7 @@
       toastTimer = setTimeout(() => {
         banner.classList.add('hidden');
         banner.classList.remove('flex');
-      }, 2800);
+      }, 3000);
     }
 
     function getLocalKeyForRoom(roomId) { return `class_stock_game_v8_${roomId}`; }
@@ -861,6 +903,8 @@
             restoredStudents[sName] = {
               cash: sObj.cash !== undefined ? Number(sObj.cash) : seedMoney,
               netDeposit: Number(sObj.netDeposit) || 0,
+              realizedProfit: Number(sObj.realizedProfit) || 0,
+              realizedCost: Number(sObj.realizedCost) || 0,
               pin: sObj.pin ? String(sObj.pin) : "1234",
               holdings: cleanHoldings
             };
@@ -927,7 +971,7 @@
       saveLocalMirror();
       if (isCloudConnected && firebaseDb) {
         const path = getFirebasePathForRoom(currentRoomId);
-        firebaseDb.ref(path).set({
+        firebaseDb.ref(path).update({
           roomCustomTitle, roomTeacherPin, marketDay, seedMoney, stocks, students,
           economyPhase, prevTurnStudentAssets, prevTurnStudentRanks, updatedAt: Date.now()
         }).catch(err => {
@@ -941,11 +985,14 @@
       saveLocalMirror();
       if (isCloudConnected && firebaseDb && students[studentName]) {
         const path = getFirebasePathForRoom(currentRoomId);
-        firebaseDb.ref(`${path}/students/${studentName}`).set({
-          cash: Number(students[studentName].cash) || 0,
-          netDeposit: Number(students[studentName].netDeposit) || 0,
-          pin: String(students[studentName].pin || "1234"),
-          holdings: students[studentName].holdings || {}
+        const st = students[studentName];
+        firebaseDb.ref(`${path}/students/${studentName}`).update({
+          cash: Number(st.cash) || 0,
+          netDeposit: Number(st.netDeposit) || 0,
+          realizedProfit: Number(st.realizedProfit) || 0,
+          realizedCost: Number(st.realizedCost) || 0,
+          pin: String(st.pin || "1234"),
+          holdings: st.holdings || {}
         }).catch(err => {
           console.error("학생 주문 클라우드 반영 실패:", err);
           showOrderToast("⚠️ 서버 저장 실패! Firebase 규칙(.write: true)을 확인해주세요.", "error");
@@ -1013,7 +1060,7 @@
     function selectMyStudentAccount(name) {
       currentStudentName = name;
       if (!students[currentStudentName]) {
-        students[currentStudentName] = { cash: seedMoney, netDeposit: 0, pin: "1234", holdings: {} };
+        students[currentStudentName] = { cash: seedMoney, netDeposit: 0, realizedProfit: 0, realizedCost: 0, pin: "1234", holdings: {} };
       }
       localStorage.setItem(getMyNameKeyForRoom(currentRoomId), name);
       document.getElementById('studentLoginOverlay').classList.add('hidden');
@@ -1074,6 +1121,7 @@
       const btnLabel = document.getElementById('teacherBtnLabel');
       const btn = document.getElementById('teacherModeBtn');
       const cashAdjustBtn = document.getElementById('teacherCashAdjustBtn');
+      const realizedAdjustBtn = document.getElementById('teacherRealizedAdjustBtn');
 
       if (isTeacherMode) {
         actionGroup.classList.remove('hidden'); actionGroup.classList.add('flex');
@@ -1082,6 +1130,7 @@
         btnLabel.textContent = "교사 ON";
         btn.className = "px-2.5 py-1.5 rounded-xl bg-amber-950/90 text-amber-300 text-xs font-black border border-amber-500/60 flex items-center gap-1 cursor-pointer";
         if (cashAdjustBtn) { cashAdjustBtn.classList.remove('hidden'); cashAdjustBtn.classList.add('flex'); }
+        if (realizedAdjustBtn) { realizedAdjustBtn.classList.remove('hidden'); realizedAdjustBtn.classList.add('flex'); }
       } else {
         actionGroup.classList.add('hidden'); actionGroup.classList.remove('flex');
         macroBar.classList.add('hidden'); macroBar.classList.remove('flex');
@@ -1089,6 +1138,7 @@
         btnLabel.textContent = "교사 모드";
         btn.className = "px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 cursor-pointer";
         if (cashAdjustBtn) { cashAdjustBtn.classList.add('hidden'); cashAdjustBtn.classList.remove('flex'); }
+        if (realizedAdjustBtn) { realizedAdjustBtn.classList.add('hidden'); realizedAdjustBtn.classList.remove('flex'); }
       }
       renderAll();
     }
@@ -1117,6 +1167,8 @@
       Object.values(students).forEach(st => {
         if (!st.pin) st.pin = "1234";
         if (st.netDeposit === undefined) st.netDeposit = 0;
+        if (st.realizedProfit === undefined) st.realizedProfit = 0;
+        if (st.realizedCost === undefined) st.realizedCost = 0;
         if (!st.holdings) st.holdings = {};
       });
       if (!selectedStockCode || !stocks.some(x => x.code === selectedStockCode)) {
@@ -1166,7 +1218,7 @@
     function setupDefaultStudents() {
       students = {};
       DEFAULT_STUDENTS.forEach(name => {
-        students[name] = { cash: seedMoney, netDeposit: 0, pin: "1234", holdings: {} };
+        students[name] = { cash: seedMoney, netDeposit: 0, realizedProfit: 0, realizedCost: 0, pin: "1234", holdings: {} };
       });
       currentStudentName = DEFAULT_STUDENTS[0];
     }
@@ -1199,14 +1251,16 @@
       const econConfig = ECON_CONFIGS[economyPhase];
 
       prevTurnStudentAssets = {};
-      // ★ 전일 대비 순위 기록도 수익률 높은순 기준으로 저장 ★
       const currentRankedBeforeTurn = Object.keys(students).map(name => ({
         name, ...getStudentStats(name)
-      })).sort((a, b) => (b.profitRate - a.profitRate) || (b.totalAsset - a.totalAsset));
+      })).sort((a, b) => {
+        if (rankingSortMode === 'realizedRate') return (b.realizedRate - a.realizedRate) || (b.realizedProfit - a.realizedProfit);
+        return (b.realizedProfit - a.realizedProfit) || (b.realizedRate - a.realizedRate);
+      });
 
       prevTurnStudentRanks = {};
       currentRankedBeforeTurn.forEach((item, idx) => {
-        prevTurnStudentAssets[item.name] = item.totalAsset;
+        prevTurnStudentAssets[item.name] = item.realizedProfit;
         prevTurnStudentRanks[item.name] = idx + 1;
       });
 
@@ -1289,36 +1343,16 @@
       const sData = students[currentStudentName];
       if (!sData) return;
 
-      const curNetDep = Number(sData.netDeposit) || 0;
-      const curPrincipal = seedMoney + curNetDep;
-
       const input = prompt(
-        `[${currentStudentName}] 학생 예수금 입출금 및 투자원금 관리\n\n` +
-        `1) 일반 입출금 (예수금과 투자원금이 함께 증감됨):\n` +
-        `   • 입금: 10000000  /  출금: -5000000\n\n` +
-        `2) 이미 지급한 금액의 원금만 보정할 때 (예수금은 그대로 유지):\n` +
-        `   • 앞에 '='를 붙여 누적 입금액 입력 (예: =10000000)\n\n` +
-        `현재 예수금: ${Number(sData.cash).toLocaleString()}원 / 현재 투자원금: ${curPrincipal.toLocaleString()}원`,
+        `[${currentStudentName}] 학생 예수금 입출금 (실현손익·실현수익률에는 전혀 영향을 주지 않습니다)\n\n` +
+        `• 입금(상점): 양수 입력 (예: 50000)\n` +
+        `• 출금(매점/벌금): 음수 입력 (예: -30000)\n\n` +
+        `현재 보유 예수금: ${Number(sData.cash).toLocaleString()}원`,
         "0"
       );
       if (input === null) return;
 
-      const trimmed = input.trim();
-
-      if (trimmed.startsWith('=')) {
-        const targetNetDep = parseInt(trimmed.slice(1).replace(/,/g, ''), 10);
-        if (isNaN(targetNetDep)) {
-          showOrderToast("⚠️ '=숫자' 형식으로 올바르게 입력해주세요. (예: =10000000)", "error");
-          return;
-        }
-        sData.netDeposit = targetNetDep;
-        pushSingleStudentToCloud(currentStudentName);
-        renderAll();
-        showOrderToast(`✅ [${currentStudentName}] 투자원금이 ${(seedMoney + targetNetDep).toLocaleString()}원으로 보정되었습니다!`, "success");
-        return;
-      }
-
-      const amount = parseInt(trimmed.replace(/,/g, ''), 10);
+      const amount = parseInt(input.replace(/,/g, ''), 10);
       if (isNaN(amount) || amount === 0) {
         showOrderToast("⚠️ 올바른 금액을 숫자로 입력해주세요.", "error");
         return;
@@ -1330,16 +1364,50 @@
       }
 
       sData.cash = Number(sData.cash) + amount;
-      sData.netDeposit = curNetDep + amount;
+      sData.netDeposit = (Number(sData.netDeposit) || 0) + amount;
 
       pushSingleStudentToCloud(currentStudentName);
       renderAll();
 
       if (amount > 0) {
-        showOrderToast(`💰 [${currentStudentName}] +${amount.toLocaleString()}원 입금 완료! (투자원금: ${(seedMoney + sData.netDeposit).toLocaleString()}원)`, "success");
+        showOrderToast(`💰 [${currentStudentName}] +${amount.toLocaleString()}원 입금 완료!`, "success");
       } else {
-        showOrderToast(`💸 [${currentStudentName}] ${amount.toLocaleString()}원 출금 완료! (투자원금: ${(seedMoney + sData.netDeposit).toLocaleString()}원)`, "sell");
+        showOrderToast(`💸 [${currentStudentName}] ${amount.toLocaleString()}원 출금 완료!`, "sell");
       }
+    }
+
+    // 교사용 실현손익/투자원금 수동 보정 도구
+    function promptRealizedAdjustment() {
+      if (!isTeacherMode) return;
+      const sData = students[currentStudentName];
+      if (!sData) return;
+
+      const curProfit = Number(sData.realizedProfit) || 0;
+      const curCost = Number(sData.realizedCost) || 0;
+
+      const input = prompt(
+        `[${currentStudentName}] 학생의 누적 실현손익 및 누적 매도원금을 수동 설정합니다.\n` +
+        `'실현손익:투자원금' 형식으로 입력하세요. (초기화하려면 0:0 입력)\n\n` +
+        `예시) 100만원 투자해 10만원 벌었을 때 ➔ 100000:1000000\n` +
+        `현재 값 ➔ ${curProfit}:${curCost}`,
+        `${curProfit}:${curCost}`
+      );
+      if (input === null) return;
+
+      const parts = input.split(':');
+      const newProfit = parseInt((parts[0] || "0").replace(/,/g, ''), 10);
+      const newCost = parseInt((parts[1] || "0").replace(/,/g, ''), 10);
+
+      if (isNaN(newProfit) || isNaN(newCost) || newCost < 0) {
+        showOrderToast("⚠️ '실현손익:투자원금' 형식으로 숫자를 입력해주세요.", "error");
+        return;
+      }
+
+      sData.realizedProfit = newProfit;
+      sData.realizedCost = newCost;
+      pushSingleStudentToCloud(currentStudentName);
+      renderAll();
+      showOrderToast(`✅ [${currentStudentName}] 실현손익(${newProfit.toLocaleString()}원) 보정이 완료되었습니다!`, "success");
     }
 
     function ensureActiveAccountAndStock() {
@@ -1351,16 +1419,18 @@
         currentStudentName = Object.keys(students)[0] || DEFAULT_STUDENTS[0];
       }
       if (!students[currentStudentName]) {
-        students[currentStudentName] = { cash: seedMoney, netDeposit: 0, pin: "1234", holdings: {} };
+        students[currentStudentName] = { cash: seedMoney, netDeposit: 0, realizedProfit: 0, realizedCost: 0, pin: "1234", holdings: {} };
       }
-      if (students[currentStudentName].netDeposit === undefined) {
-        students[currentStudentName].netDeposit = 0;
-      }
+      if (students[currentStudentName].realizedProfit === undefined) students[currentStudentName].realizedProfit = 0;
+      if (students[currentStudentName].realizedCost === undefined) students[currentStudentName].realizedCost = 0;
       if (!students[currentStudentName].holdings) {
         students[currentStudentName].holdings = {};
       }
     }
 
+    /* ==========================================================================
+       ★ 매수 / 매도 / 전량 매도 시 실현손익 & 실현수익률 자동 계산 ★
+       ========================================================================== */
     function executeOrder() {
       ensureActiveAccountAndStock();
       const s = stocks.find(x => String(x.code) === String(selectedStockCode));
@@ -1376,17 +1446,17 @@
         return;
       }
       const stockPrice = Number(s.price) || 0;
-      const totalCost = qty * stockPrice;
+      const totalOrderAmount = qty * stockPrice;
 
       if (currentOrderType === 'buy') {
-        if (Number(sData.cash) < totalCost) {
-          showOrderToast(`❌ 예수금 부족! (필요: ${totalCost.toLocaleString()}원)`, "error");
+        if (Number(sData.cash) < totalOrderAmount) {
+          showOrderToast(`❌ 예수금 부족! (필요: ${totalOrderAmount.toLocaleString()}원)`, "error");
           return;
         }
-        sData.cash = Number(sData.cash) - totalCost;
+        sData.cash = Number(sData.cash) - totalOrderAmount;
         if (!sData.holdings[s.code]) sData.holdings[s.code] = { qty: 0, totalCost: 0 };
         sData.holdings[s.code].qty = Number(sData.holdings[s.code].qty) + qty;
-        sData.holdings[s.code].totalCost = Number(sData.holdings[s.code].totalCost) + totalCost;
+        sData.holdings[s.code].totalCost = Number(sData.holdings[s.code].totalCost) + totalOrderAmount;
 
         pushSingleStudentToCloud(currentStudentName);
         renderAll();
@@ -1397,15 +1467,24 @@
           showOrderToast(`❌ 보유 주식 부족! (현재 보유: ${currentQty}주)`, "error");
           return;
         }
+        // 매도한 수량만큼의 매수원금(costBasis) 및 실현손익(tradeProfit) 정밀 계산
         const avgPrice = Number(sData.holdings[s.code].totalCost) / currentQty;
-        sData.cash = Number(sData.cash) + totalCost;
+        const costBasis = Math.round(avgPrice * qty);
+        const tradeProfit = totalOrderAmount - costBasis;
+        const tradeRate = costBasis > 0 ? ((tradeProfit / costBasis) * 100).toFixed(2) : "0.00";
+
+        sData.cash = Number(sData.cash) + totalOrderAmount;
+        sData.realizedCost = (Number(sData.realizedCost) || 0) + costBasis;
+        sData.realizedProfit = (Number(sData.realizedProfit) || 0) + tradeProfit;
+
         sData.holdings[s.code].qty = currentQty - qty;
-        sData.holdings[s.code].totalCost = Math.max(0, Math.round(Number(sData.holdings[s.code].totalCost) - (avgPrice * qty)));
+        sData.holdings[s.code].totalCost = Math.max(0, Number(sData.holdings[s.code].totalCost) - costBasis);
         if (sData.holdings[s.code].qty <= 0) delete sData.holdings[s.code];
 
         pushSingleStudentToCloud(currentStudentName);
         renderAll();
-        showOrderToast(`💰 [${currentStudentName}] ${s.name} ${qty}주 매도 체결!`, 'sell');
+        const pSign = tradeProfit >= 0 ? '+' : '';
+        showOrderToast(`💰 ${s.name} ${qty}주 매도 확정! (실현손익: ${pSign}${tradeProfit.toLocaleString()}원 / ${pSign}${tradeRate}%)`, 'sell');
       }
     }
 
@@ -1418,17 +1497,27 @@
         return;
       }
       let totalSoldAmount = 0;
+      let totalSoldCost = 0;
       holdingCodes.forEach(code => {
         const s = stocks.find(x => String(x.code) === String(code));
         if (s) {
-          totalSoldAmount += Number(s.price) * Number(sData.holdings[code].qty);
+          const q = Number(sData.holdings[code].qty);
+          const c = Number(sData.holdings[code].totalCost) || 0;
+          totalSoldAmount += Number(s.price) * q;
+          totalSoldCost += c;
           delete sData.holdings[code];
         }
       });
+
+      const batchProfit = totalSoldAmount - totalSoldCost;
       sData.cash = Number(sData.cash) + totalSoldAmount;
+      sData.realizedCost = (Number(sData.realizedCost) || 0) + totalSoldCost;
+      sData.realizedProfit = (Number(sData.realizedProfit) || 0) + batchProfit;
+
       pushSingleStudentToCloud(currentStudentName);
       renderAll();
-      showOrderToast(`💰 [${currentStudentName}] 전량 매도 완료! (+${totalSoldAmount.toLocaleString()}원)`, "sell");
+      const pSign = batchProfit >= 0 ? '+' : '';
+      showOrderToast(`💰 전량 매도 확정! (이번 실현손익: ${pSign}${batchProfit.toLocaleString()}원)`, "sell");
     }
 
     function aiRandomBuy() {
@@ -1484,7 +1573,6 @@
     function renderAll() {
       ensureActiveAccountAndStock();
       document.getElementById('turnDisplay').textContent = `${marketDay}일차`;
-      document.getElementById('initSeedMoneyDisplay').textContent = `${seedMoney.toLocaleString()}원`;
       renderStudentSelector();
       renderStockList();
       renderDetailView();
@@ -1518,36 +1606,72 @@
       updateOrderCalculation();
     }
 
+    // ★ 핵심: 실현손익(realizedProfit) 및 실현수익률(realizedRate) 계산 함수 ★
     function getStudentStats(name) {
-      const sData = students[name] || { cash: seedMoney, netDeposit: 0, holdings: {} };
+      const sData = students[name] || { cash: seedMoney, netDeposit: 0, realizedProfit: 0, realizedCost: 0, holdings: {} };
       let stockValue = 0;
-      let totalCost = 0;
+      let holdingCost = 0;
       for (const [code, h] of Object.entries(sData.holdings || {})) {
         const s = stocks.find(x => String(x.code) === String(code));
         if (s && Number(h.qty) > 0) {
           stockValue += Number(s.price) * Number(h.qty);
-          totalCost += Number(h.totalCost);
+          holdingCost += Number(h.totalCost);
         }
       }
       const cashVal = Number(sData.cash) || 0;
       const totalAsset = cashVal + stockValue;
-      const netDep = Number(sData.netDeposit) || 0;
-      const basePrincipal = Math.max(1, seedMoney + netDep);
-      const profitRate = ((totalAsset - basePrincipal) / basePrincipal) * 100;
-      return { cash: cashVal, stockValue, totalAsset, profitRate, totalCost, basePrincipal, netDep };
+      const unrealizedProfit = stockValue - holdingCost;
+      const unrealizedRate = holdingCost > 0 ? (unrealizedProfit / holdingCost) * 100 : 0;
+
+      const realizedProfit = Number(sData.realizedProfit) || 0;
+      const realizedCost = Number(sData.realizedCost) || 0;
+      // 투자(매도 확정) 원금 대비 실현수익률(%) 계산!
+      const realizedRate = realizedCost > 0 ? (realizedProfit / realizedCost) * 100 : 0;
+
+      return {
+        cash: cashVal,
+        stockValue,
+        holdingCost,
+        totalAsset,
+        unrealizedProfit,
+        unrealizedRate,
+        realizedProfit,
+        realizedCost,
+        realizedRate
+      };
     }
 
     function renderStudentHUD() {
       document.getElementById('hudStudentName').textContent = currentStudentName;
       const stats = getStudentStats(currentStudentName);
       document.getElementById('studentCashDisplay').textContent = `${stats.cash.toLocaleString()}원`;
-      const principalEl = document.getElementById('studentPrincipalDisplay');
-      if (principalEl) principalEl.textContent = `${stats.basePrincipal.toLocaleString()}원`;
-      document.getElementById('studentTotalAssetDisplay').textContent = `${stats.totalAsset.toLocaleString()}원`;
-      const rateDisplay = document.getElementById('studentProfitRateDisplay');
-      const sign = stats.profitRate >= 0 ? '+' : '';
-      rateDisplay.textContent = `${sign}${stats.profitRate.toFixed(2)}%`;
-      rateDisplay.className = `font-bold ${stats.profitRate >= 0 ? 'price-up' : 'price-down'}`;
+
+      const pSign = stats.realizedProfit > 0 ? '+' : '';
+      const pColor = stats.realizedProfit > 0 ? 'price-up' : (stats.realizedProfit < 0 ? 'price-down' : 'text-slate-200');
+
+      const rpEl = document.getElementById('studentRealizedProfitDisplay');
+      rpEl.textContent = `${pSign}${stats.realizedProfit.toLocaleString()}원`;
+      rpEl.className = `font-black ${pColor}`;
+
+      const rrEl = document.getElementById('studentRealizedRateDisplay');
+      rrEl.textContent = `${pSign}${stats.realizedRate.toFixed(2)}%`;
+      rrEl.className = `font-black ${pColor}`;
+
+      // 중앙 요약 카드 4종 업데이트
+      document.getElementById('summaryInvestedCost').textContent = `${stats.realizedCost.toLocaleString()}원`;
+      const sumRp = document.getElementById('summaryRealizedProfit');
+      sumRp.textContent = `${pSign}${stats.realizedProfit.toLocaleString()}원`;
+      sumRp.className = `font-black text-sm ${pColor}`;
+
+      const sumRr = document.getElementById('summaryRealizedRate');
+      sumRr.textContent = `${pSign}${stats.realizedRate.toFixed(2)}%`;
+      sumRr.className = `font-black text-sm ${pColor}`;
+
+      const uSign = stats.unrealizedProfit > 0 ? '+' : '';
+      const uColor = stats.unrealizedProfit > 0 ? 'price-up' : (stats.unrealizedProfit < 0 ? 'price-down' : 'text-slate-400');
+      const sumUp = document.getElementById('summaryUnrealizedProfit');
+      sumUp.textContent = `${uSign}${stats.unrealizedProfit.toLocaleString()}원 (${uSign}${stats.unrealizedRate.toFixed(2)}%)`;
+      sumUp.className = `font-bold text-sm ${uColor}`;
     }
 
     function renderStudentPortfolio() {
@@ -1578,7 +1702,7 @@
             <td class="py-1.5 font-bold text-slate-200 cursor-pointer" onclick="selectStock('${s.code}')">${s.name}</td>
             <td class="py-1.5 font-bold text-slate-100">${qty.toLocaleString()}주</td>
             <td class="py-1.5 text-slate-400">${avgPrice.toLocaleString()}원</td>
-            <td class="py-1.5 font-bold text-slate-100">${evalValue.toLocaleString()}원</td>
+            <td class="py-1.5 font-bold ${colorClass}">${sign}${profit.toLocaleString()}원</td>
             <td class="py-1.5 text-right font-bold ${colorClass}">${sign}${profitRate.toFixed(2)}%</td>
           </tr>
         `;
@@ -1626,18 +1750,18 @@
       }).join('');
     }
 
-    // ★ 수익률순 / 총자산순 랭킹 정렬 전환 함수 ★
+    // ★ 랭킹 정렬 스위치: 실현수익률 순위 vs 실현손익(금액) 순위 ★
     function setRankingSort(mode) {
       rankingSortMode = mode;
       const rateBtn = document.getElementById('rankSortRateBtn');
-      const assetBtn = document.getElementById('rankSortAssetBtn');
-      if (rateBtn && assetBtn) {
-        rateBtn.className = (mode === 'profitRate')
-          ? "px-2.5 py-1 rounded-lg font-black transition-all bg-rose-600 text-white shadow cursor-pointer"
-          : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
-        assetBtn.className = (mode === 'totalAsset')
-          ? "px-2.5 py-1 rounded-lg font-black transition-all bg-amber-600 text-white shadow cursor-pointer"
-          : "px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
+      const profitBtn = document.getElementById('rankSortProfitBtn');
+      if (rateBtn && profitBtn) {
+        rateBtn.className = (mode === 'realizedRate')
+          ? "px-3 py-1.5 rounded-lg font-black transition-all bg-rose-600 text-white shadow cursor-pointer"
+          : "px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
+        profitBtn.className = (mode === 'realizedProfit')
+          ? "px-3 py-1.5 rounded-lg font-black transition-all bg-amber-600 text-white shadow cursor-pointer"
+          : "px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
       }
       renderClassRankingTable();
     }
@@ -1645,15 +1769,15 @@
     function renderClassRankingTable() {
       const tbody = document.getElementById('classRankingTableBody');
       const rankedList = Object.keys(students).map(name => ({ name, ...getStudentStats(name) })).sort((a, b) => {
-        if (rankingSortMode === 'profitRate') {
-          return (b.profitRate - a.profitRate) || (b.totalAsset - a.totalAsset);
+        if (rankingSortMode === 'realizedRate') {
+          return (b.realizedRate - a.realizedRate) || (b.realizedProfit - a.realizedProfit);
         }
-        return (b.totalAsset - a.totalAsset) || (b.profitRate - a.profitRate);
+        return (b.realizedProfit - a.realizedProfit) || (b.realizedRate - a.realizedRate);
       });
 
       tbody.innerHTML = rankedList.map((item, idx) => {
-        const sign = item.profitRate >= 0 ? '+' : '';
-        const colorClass = item.profitRate >= 0 ? 'price-up' : 'price-down';
+        const sign = item.realizedProfit > 0 ? '+' : '';
+        const colorClass = item.realizedProfit > 0 ? 'price-up' : (item.realizedProfit < 0 ? 'price-down' : 'text-slate-300');
         
         let rankBadge = `<span class="font-bold font-mono text-slate-400">${idx + 1}위</span>`;
         if (idx === 0) rankBadge = `<span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-black border border-amber-500/40">🥇 1위</span>`;
@@ -1682,6 +1806,9 @@
               ? `<span class="text-[11px] text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i>접속 중</span>`
               : `<button type="button" onclick="openStudentLoginOverlay(); promptStudentPin('${item.name}');" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white text-[11px] font-bold transition-all cursor-pointer"><i class="fa-solid fa-lock text-[9px] mr-1"></i>비번 로그인</button>`);
 
+        const uSign = item.unrealizedProfit > 0 ? '+' : '';
+        const uColor = item.unrealizedProfit > 0 ? 'price-up' : (item.unrealizedProfit < 0 ? 'price-down' : 'text-slate-500');
+
         return `
           <tr class="hover:bg-slate-800/40 transition-colors ${isCurrent ? 'bg-indigo-950/30 border-l-4 border-indigo-500' : ''}">
             <td class="py-3 px-4 text-center whitespace-nowrap">${rankBadge}</td>
@@ -1690,11 +1817,11 @@
               <span>${item.name}</span>
               ${isCurrent ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-indigo-600 text-white font-bold">내 계좌</span>` : ''}
             </td>
-            <td class="py-3 px-4 text-right text-amber-300/90">${item.basePrincipal.toLocaleString()}원</td>
-            <td class="py-3 px-4 text-right text-slate-300">${item.cash.toLocaleString()}원</td>
-            <td class="py-3 px-4 text-right text-slate-300">${item.stockValue.toLocaleString()}원</td>
-            <td class="py-3 px-4 text-right font-black text-slate-100 text-sm">${item.totalAsset.toLocaleString()}원</td>
-            <td class="py-3 px-4 text-right font-extrabold ${colorClass}">${sign}${item.profitRate.toFixed(2)}%</td>
+            <td class="py-3 px-4 text-right text-slate-400">${item.realizedCost.toLocaleString()}원</td>
+            <td class="py-3 px-4 text-right font-black text-sm ${colorClass}">${sign}${item.realizedProfit.toLocaleString()}원</td>
+            <td class="py-3 px-4 text-right font-extrabold text-sm ${colorClass}">${sign}${item.realizedRate.toFixed(2)}%</td>
+            <td class="py-3 px-4 text-right ${uColor}">${uSign}${item.unrealizedProfit.toLocaleString()}원</td>
+            <td class="py-3 px-4 text-right text-emerald-400/90">${item.cash.toLocaleString()}원</td>
             <td class="py-3 px-4 text-center">${actionBtn}</td>
           </tr>
         `;
@@ -1872,16 +1999,33 @@
       const s = stocks.find(x => String(x.code) === String(selectedStockCode));
       if (!s) return;
       const qty = Math.max(1, parseInt(document.getElementById('orderQtyInput').value) || 1);
-      document.getElementById('orderTotalPriceDisplay').textContent = `${(qty * Number(s.price)).toLocaleString()}원`;
+      const totalOrderVal = qty * Number(s.price);
+      document.getElementById('orderTotalPriceDisplay').textContent = `${totalOrderVal.toLocaleString()}원`;
 
       const maxAffordableDisplay = document.getElementById('maxAffordableDisplay');
+      const expEl = document.getElementById('expectedRealizedDisplay');
       const sData = students[currentStudentName] || { cash: 0, holdings: {} };
 
       if (currentOrderType === 'buy') {
         maxAffordableDisplay.textContent = `매수 가능: ${Math.floor(Number(sData.cash) / Number(s.price)).toLocaleString()}주`;
+        if (expEl) { expEl.textContent = "매도 시 확정됨"; expEl.className = "text-slate-400"; }
       } else {
-        const holdingQty = (sData.holdings && sData.holdings[s.code]) ? Number(sData.holdings[s.code].qty) : 0;
+        const hObj = (sData.holdings && sData.holdings[s.code]) ? sData.holdings[s.code] : null;
+        const holdingQty = hObj ? Number(hObj.qty) : 0;
         maxAffordableDisplay.textContent = `보유 수량: ${holdingQty.toLocaleString()}주`;
+        if (expEl) {
+          if (holdingQty > 0) {
+            const avg = Number(hObj.totalCost) / holdingQty;
+            const estProfit = Math.round((Number(s.price) - avg) * Math.min(qty, holdingQty));
+            const estRate = avg > 0 ? (((Number(s.price) - avg) / avg) * 100).toFixed(2) : "0.00";
+            const sign = estProfit >= 0 ? '+' : '';
+            expEl.textContent = `${sign}${estProfit.toLocaleString()}원 (${sign}${estRate}%)`;
+            expEl.className = estProfit >= 0 ? "price-up font-bold" : "price-down font-bold";
+          } else {
+            expEl.textContent = "보유 없음";
+            expEl.className = "text-slate-500";
+          }
+        }
       }
 
       const submitBtn = document.getElementById('submitOrderBtn');
@@ -1946,13 +2090,10 @@
 
       document.getElementById('summaryStudentName').textContent = currentStudentName;
       const curStats = getStudentStats(currentStudentName);
-      const prevAsset = prevTurnStudentAssets[currentStudentName] !== undefined ? Number(prevTurnStudentAssets[currentStudentName]) : curStats.totalAsset;
-      const dayDiff = curStats.totalAsset - prevAsset;
-      const dayDiffRate = prevAsset === 0 ? 0 : (dayDiff / prevAsset) * 100;
-      const sign = dayDiff >= 0 ? '+' : '';
+      const sign = curStats.realizedProfit >= 0 ? '+' : '';
       const returnEl = document.getElementById('summaryStudentDailyReturn');
-      returnEl.textContent = `${sign}${dayDiff.toLocaleString()}원 (${sign}${dayDiffRate.toFixed(2)}%)`;
-      returnEl.className = `font-mono font-bold text-sm ${dayDiff >= 0 ? 'text-rose-400' : 'text-blue-400'}`;
+      returnEl.textContent = `${sign}${curStats.realizedProfit.toLocaleString()}원 (${sign}${curStats.realizedRate.toFixed(2)}%)`;
+      returnEl.className = `font-mono font-bold text-sm ${curStats.realizedProfit >= 0 ? 'text-rose-400' : 'text-blue-400'}`;
 
       modal.classList.remove('hidden');
       setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('.glass-panel').classList.remove('scale-95'); }, 10);
@@ -2102,7 +2243,7 @@
         if (students[name]) {
           newStudents[name] = { ...students[name], pin: pin };
         } else {
-          newStudents[name] = { cash: seedMoney, netDeposit: 0, pin: pin, holdings: {} };
+          newStudents[name] = { cash: seedMoney, netDeposit: 0, realizedProfit: 0, realizedCost: 0, pin: pin, holdings: {} };
         }
       });
 
