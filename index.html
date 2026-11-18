@@ -1312,22 +1312,39 @@
         const upperLimit = Math.floor(stock.basePrice * 1.30);
         const lowerLimit = Math.ceil(stock.basePrice * 0.70);
 
-        let forcedUpper = (stock.trend === "up" && economyPhase >= 4);
-        let forcedLower = (stock.trend === "down" && economyPhase <= 2);
+        const u1 = Math.random(), u2 = Math.random();
+        const randStdNormal = Math.sqrt(-2.0 * Math.log(u1 || 0.001)) * Math.cos(2.0 * Math.PI * u2);
         let rawRate = 0;
 
-        if (forcedUpper) rawRate = 0.35;
-        else if (forcedLower) rawRate = -0.35;
-        else {
-          const u1 = Math.random(), u2 = Math.random();
-          const randStdNormal = Math.sqrt(-2.0 * Math.log(u1 || 0.001)) * Math.cos(2.0 * Math.PI * u2);
-          let bias = econConfig.bias;
-          let vol = econConfig.volatility;
-
-          if (stock.trend === "up") bias = (economyPhase <= 2) ? 0.03 : bias + 0.08;
-          else if (stock.trend === "down") bias = (economyPhase >= 4) ? -0.05 : bias - 0.08;
-
-          rawRate = bias + (randStdNormal * vol);
+        if (stock.trend === "up") {
+          // 📈 [우상향 보정] 대불황에도 최소한만 하락, 일반장 무조건 상승, 호황장 상한가 고확률 (하한가 원천 차단!)
+          if (economyPhase === 1) {
+            rawRate = -0.05 + (Math.random() * 0.06); // -5% ~ +1% 방어
+          } else if (economyPhase === 2) {
+            rawRate = -0.03 + (Math.random() * 0.06); // -3% ~ +3% 선방
+          } else if (economyPhase === 3) {
+            rawRate = Math.random() < 0.20 ? 0.35 : (0.04 + Math.random() * 0.14); // 무조건 상승 (+4%~+18%), 20% 상한가
+          } else if (economyPhase === 4) {
+            rawRate = Math.random() < 0.75 ? 0.35 : (0.12 + Math.random() * 0.14); // 75% 상한가, 아니면 +12%~+26%
+          } else if (economyPhase === 5) {
+            rawRate = Math.random() < 0.90 ? 0.35 : (0.18 + Math.random() * 0.11); // 90% 상한가, 아니면 +18%~+29%
+          }
+        } else if (stock.trend === "down") {
+          // 📉 [우하향 보정] 대호황에도 최소한만 상승, 일반장 무조건 하락, 불황장 하한가 고확률 (상한가 원천 차단!)
+          if (economyPhase === 5) {
+            rawRate = -0.01 + (Math.random() * 0.06); // -1% ~ +5% 상승 제한
+          } else if (economyPhase === 4) {
+            rawRate = -0.03 + (Math.random() * 0.06); // -3% ~ +3% 약보합
+          } else if (economyPhase === 3) {
+            rawRate = Math.random() < 0.20 ? -0.35 : (-0.04 - Math.random() * 0.14); // 무조건 하락 (-18%~-4%), 20% 하한가
+          } else if (economyPhase === 2) {
+            rawRate = Math.random() < 0.75 ? -0.35 : (-0.12 - Math.random() * 0.14); // 75% 하한가, 아니면 -26%~-12%
+          } else if (economyPhase === 1) {
+            rawRate = Math.random() < 0.90 ? -0.35 : (-0.18 - Math.random() * 0.11); // 90% 하한가, 아니면 -29%~-18%
+          }
+        } else {
+          // ⚖️ [보통(랜덤) 종목]
+          rawRate = econConfig.bias + (randStdNormal * econConfig.volatility);
           if (Math.random() < econConfig.extremeChance) {
             rawRate = econConfig.extremeType === 'upper' ? 0.32 : (econConfig.extremeType === 'lower' ? -0.32 : (Math.random() > 0.5 ? 0.32 : -0.32));
           }
@@ -1336,6 +1353,13 @@
         let newPrice = Math.round(stock.basePrice * (1 + rawRate));
         if (newPrice > 1000) newPrice = Math.round(newPrice / 10) * 10;
         if (newPrice > 100000) newPrice = Math.round(newPrice / 100) * 100;
+
+        // 일반장(3단계) 이상에서 우상향이 반올림 때문에 제자리이거나, 우하향이 제자리인 경우 최소 1호가 변동 보장
+        if (stock.trend === "up" && economyPhase >= 3 && newPrice <= stock.basePrice) {
+          newPrice = stock.basePrice + (stock.basePrice > 100000 ? 100 : 10);
+        } else if (stock.trend === "down" && economyPhase <= 3 && newPrice >= stock.basePrice) {
+          newPrice = Math.max(100, stock.basePrice - (stock.basePrice > 100000 ? 100 : 10));
+        }
 
         stock.isUpperLimit = false;
         stock.isLowerLimit = false;
